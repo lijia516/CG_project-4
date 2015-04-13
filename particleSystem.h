@@ -18,6 +18,24 @@
 
 #include "vec.h"
 
+#include <vector>
+#include <map>
+
+
+class Particle {
+    
+public:
+    
+    Particle(): position(0,0,0),velocity(0,0,0),force(0,0,0),mass(1) {};
+    
+    Vec3f position;
+    Vec3f velocity;
+    Vec3f force;
+    float mass;
+};
+
+
+
 class ParticleSystem {
 
 public:
@@ -66,7 +84,9 @@ public:
 	bool isDirty() { return dirty; }
 	void setDirty(bool d) { dirty = d; }
 
-
+    static Vec4f particleOrigin;
+    float time;
+    
 protected:
 	
 
@@ -80,6 +100,23 @@ protected:
 	/** General state variables **/
 	bool simulate;						// flag for simulation mode
 	bool dirty;							// flag for updating ui (don't worry about this)
+    
+    
+    
+    /*** particles***/
+    
+    std::vector<Particle*> particles;
+//    std::vector<std::vector<Particle*> > bake_particles;
+    
+    
+    std::map<float, std::vector<Vec3f> > bake_particles;
+    
+    static Vec3f gravity;
+    static int particleNum;
+    static int particleReal;
+    
+
+    
 
 };
 
