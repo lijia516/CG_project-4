@@ -1,5 +1,5 @@
-#ifndef INCLUDED_BSPLINE_CURVE_EVALUATOR_H
-#define INCLUDED_BSPLINE_CURVE_EVALUATOR_H
+#ifndef INCLUDED_BEZIER_CURVE_EVALUATOR_H
+#define INCLUDED_BEZIER_CURVE_EVALUATOR_H
 
 #pragma warning(disable : 4786)  
 
@@ -7,7 +7,7 @@
 
 //using namespace std;
 
-class BezierCurveEvaluator : public CurveEvaluator
+class BsplinesCurveEvaluator : public CurveEvaluator
 {
 public:
 	void evaluateCurve(const std::vector<Point>& ptvCtrlPts, 

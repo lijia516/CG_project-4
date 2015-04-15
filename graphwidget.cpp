@@ -27,6 +27,9 @@
 #include "camera.h"		// for NUM_CAM_CURVES
 #include "linearcurveevaluator.h"
 #include "beziercurveevaluator.h"
+#include "bsplinescurveevaluator.h"
+#include "catmullromcurveevaluator.h"
+#include "c2interpolatingcurveevaluator.h"
 
 #define LEFT		1
 #define MIDDLE		2
@@ -116,11 +119,11 @@ m_flcCurrCurve(FL_BLACK)
 
 	m_ppceCurveEvaluators[CURVE_TYPE_LINEAR] = new LinearCurveEvaluator();
 	// TODO: replace these linear evaluators
-	m_ppceCurveEvaluators[CURVE_TYPE_BSPLINE] = new LinearCurveEvaluator();
+	m_ppceCurveEvaluators[CURVE_TYPE_BSPLINE] = new BsplinesCurveEvaluator();
 	m_ppceCurveEvaluators[CURVE_TYPE_BEZIER] = new BezierCurveEvaluator();
-	m_ppceCurveEvaluators[CURVE_TYPE_CATMULLROM] = new LinearCurveEvaluator();
+	m_ppceCurveEvaluators[CURVE_TYPE_CATMULLROM] = new CatmullromCurveEvaluator();
 	// Note that C2-Interpolating curve is not a requirement
-	m_ppceCurveEvaluators[CURVE_TYPE_C2INTERPOLATING] = new LinearCurveEvaluator();
+	m_ppceCurveEvaluators[CURVE_TYPE_C2INTERPOLATING] = new C2interpolatingCurveEvaluator();
 }
 
 GraphWidget::~GraphWidget()
