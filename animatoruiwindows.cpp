@@ -47,6 +47,7 @@ Fl_Menu_Item ModelerUIWindows::menu_m_pchoCurveType[] = {
  {0}
 };
 
+
 ModelerUIWindows::ModelerUIWindows() {
   Fl_Window* w;
   { Fl_Window* o = m_pwndMainWnd = new Fl_Window(589, 705, "CS384g Animator Fall 2005");
@@ -121,11 +122,26 @@ ModelerUIWindows::ModelerUIWindows() {
             o->user_data((void*)(this));
             o->menu(menu_m_pchoCurveType);
           }
-          { Fl_Light_Button* o = m_pbtWrap = new Fl_Light_Button(345, 470, 70, 20, "Wrap");
+          { Fl_Light_Button* o = m_pbtWrap = new Fl_Light_Button(345, 470, 50, 20, "Wrap");
             o->labelsize(12);
             o->user_data((void*)(this));
           }
-          { Fl_Button* o = m_pbtZoomAll = new Fl_Button(505, 470, 75, 20, "Z&oom All");
+          { Fl_Light_Button* o = m_pbtAddNewPt = new Fl_Light_Button(400, 470, 50, 20, "AddPt");
+                o->labelsize(12);
+                o->user_data((void*)(this));
+          }
+            
+          { Fl_Light_Button* o = m_pbtSubCon = new Fl_Light_Button(455, 470, 60, 20, "SubCon");
+                o->labelsize(12);
+                o->user_data((void*)(this));
+          }
+            
+            { Fl_Light_Button* o = m_pbtDeCaste = new Fl_Light_Button(520, 470, 65, 20, "DeCaste");
+                o->labelsize(12);
+                o->user_data((void*)(this));
+            }
+            
+          { Fl_Button* o = m_pbtZoomAll = new Fl_Button(400, 500, 75, 20, "Z&oom All");
             o->labelsize(12);
             o->user_data((void*)(this));
           }

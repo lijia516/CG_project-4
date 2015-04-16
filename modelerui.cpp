@@ -25,6 +25,7 @@
 
 #include "modelerui.h"
 #include "camera.h"
+#include "curveevaluator.h"
 
 using namespace std;
 
@@ -387,10 +388,72 @@ inline void ModelerUI::cb_wrap_i(Fl_Light_Button*, void*)
 	m_pwndGraphWidget->redraw();
 }
 
-void ModelerUI::cb_wrap(Fl_Light_Button* o, void* v) 
+void ModelerUI::cb_wrap(Fl_Light_Button* o, void* v)
 {
-	((ModelerUI*)(o->user_data()))->cb_wrap_i(o,v);
+    ((ModelerUI*)(o->user_data()))->cb_wrap_i(o,v);
 }
+
+
+inline void ModelerUI::cb_addNewPt_i(Fl_Light_Button*, void*)
+{
+    if (m_pbtAddNewPt->value() == 1) {
+        CurveEvaluator::s_AddNewPt = true;
+    }
+    else if (m_pbtAddNewPt->value() == 0) {
+        CurveEvaluator::s_AddNewPt = false;
+    }
+    
+     std::cout << "AddNewPt " << CurveEvaluator::s_AddNewPt <<std::endl;
+}
+
+void ModelerUI::cb_addNewPt(Fl_Light_Button* o, void* v)
+{
+    ((ModelerUI*)(o->user_data()))->cb_addNewPt_i(o,v);
+}
+
+
+inline void ModelerUI::cb_subCon_i(Fl_Light_Button*, void*)
+{
+    if (m_pbtSubCon->value() == 1) {
+        CurveEvaluator::s_SubCon = true;
+    }
+    else if (m_pbtSubCon->value() == 0) {
+        CurveEvaluator::s_SubCon = false;
+    }
+    
+    m_pwndGraphWidget->redraw();
+    
+    std::cout << "SubCon " << CurveEvaluator::s_SubCon <<std::endl;
+
+}
+
+void ModelerUI::cb_subCon(Fl_Light_Button* o, void* v)
+{
+    ((ModelerUI*)(o->user_data()))->cb_subCon_i(o,v);
+}
+
+
+inline void ModelerUI::cb_deCaste_i(Fl_Light_Button*, void*)
+{
+    if (m_pbtDeCaste->value() == 1) {
+        CurveEvaluator::s_DeCaste = true;
+    }
+    
+    else if (m_pbtDeCaste->value() == 0) {
+        CurveEvaluator::s_DeCaste = false;
+    }
+    
+    m_pwndGraphWidget->redraw();
+    
+    std::cout << "DeCaste " << CurveEvaluator::s_DeCaste <<std::endl;
+
+}
+
+void ModelerUI::cb_deCaste(Fl_Light_Button* o, void* v)
+{
+    ((ModelerUI*)(o->user_data()))->cb_deCaste_i(o,v);
+}
+
 
 inline void ModelerUI::cb_indicatorWnd_i(IndicatorWindow*, void*) 
 {
@@ -913,7 +976,12 @@ m_bSaveMovie(false)
 	m_pwndGraphWidget->callback((Fl_Callback*)cb_graphWidget);
 	m_pbtZoomAll->callback((Fl_Callback*)cb_zoomAll);
 	m_pchoCurveType->callback((Fl_Callback*)cb_curveType);
+    
 	m_pbtWrap->callback((Fl_Callback*)cb_wrap);
+    m_pbtAddNewPt->callback((Fl_Callback*)cb_addNewPt);
+    m_pbtSubCon->callback((Fl_Callback*)cb_subCon);
+    m_pbtDeCaste->callback((Fl_Callback*)cb_deCaste);
+    
 	m_pbtSetCamKeyFrame->callback((Fl_Callback*)cb_setCamKeyFrame);
 	m_pbtRemoveCamKeyFrame->callback((Fl_Callback*)cb_removeCamKeyFrame);
 	m_pbtRemoveAllCamKeyFrames->callback((Fl_Callback*)cb_removeAllCamKeyFrames);

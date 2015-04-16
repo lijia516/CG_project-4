@@ -2,6 +2,9 @@
 #include <cassert>
 #include "math.h"
 
+#define PI 3.14159265
+#define LIMIT 0.00002
+
 int BezierCurveEvaluator::parameter( int n,  int k) const
 {
     int r = 1;
@@ -14,11 +17,152 @@ int BezierCurveEvaluator::parameter( int n,  int k) const
     }
     return r;
 }
+
+
+void BezierCurveEvaluator::drawBezier( Point p0,  Point p1, Point p2, Point p3, std::vector<Point>& ptvEvaluatedCurvePts, float fAniLength) const
+{
+    
+    float len0 = sqrt(pow(p1.x - p0.x, 2.0) + pow(p1.y - p0.y, 2.0));
+    float len1 = sqrt(pow(p2.x - p1.x, 2.0) + pow(p2.y - p1.y, 2.0));
+    float len2 = sqrt(pow(p3.x - p2.x, 2.0) + pow(p3.y - p2.y, 2.0));
+    float len3 = sqrt(pow(p0.x - p3.x, 2.0) + pow(p0.y - p3.y, 2.0));
+    
+    
+    if (s_SubCon) {
+        
+        if ((len0 + len1 + len2) * 1.0 / len3 < (1 + LIMIT)) {
+        
+            /*    for(float n=0; n < s_iSegCount; n++){
+                    
+                    float u = ((float)n)/((float)s_iSegCount-1);
+                    
+                    float factor = parameter(3,0) * pow(u,0) * pow((1-u),3-0);
+                    float x = factor*(p0.x);
+                    float y = factor*(p0.y);
+                    
+                    factor =  parameter(3,1) * pow(u,1) * pow((1-u),3-1);
+                    x += factor*(p1.x);
+                    y += factor*(p1.y);
+                    
+                    factor =  parameter(3,2) * pow(u,2) * pow((1-u),3-2);
+                    x += factor*(p2.x);
+                    y += factor*(p2.y);
+                    
+                    factor =  parameter(3,3) * pow(u,3) * pow((1-u),3-3);
+                    x += factor*(p3.x);
+                    y += factor*(p3.y);
+                    
+                    x = x > fAniLength ? x - fAniLength : x;
+                    
+                    ptvEvaluatedCurvePts.push_back(Point(x,y));
+                    std::cout << "x, y: " << x <<"," << y << std::endl;
+                    
+                } */
+            
+            
+            ptvEvaluatedCurvePts.push_back(p0);
+          //  ptvEvaluatedCurvePts.push_back(p3);
+            std::cout << "x, y: " << p0.x <<"," << p0.y << std::endl;
+            
+        } else {
+            
+            
+            float l1_x = (p1.x + p0.x) / 2.0;
+            float l1_y = (p1.y + p0.y) / 2.0;
+            
+            float r2_x = (p3.x + p2.x) / 2.0;
+            float r2_y = (p3.y + p2.y) / 2.0;
+            
+            float m_x = (p2.x + p1.x) / 2.0;
+            float m_y = (p2.y + p1.y) / 2.0;
+            
+            float l2_x = (m_x + l1_x) / 2.0;
+            float l2_y = (m_y + l1_y) / 2.0;
+            
+            float r1_x = (m_x + r2_x) / 2.0;
+            float r1_y = (m_y + r2_y) / 2.0;
+            
+            float r0_x = (l2_x + r1_x) / 2.0;
+            float r0_y = (l2_y + r1_y) / 2.0;
+            
+            drawBezier(p0, Point(l1_x, l1_y), Point(l2_x, l2_y), Point(r0_x, r0_y), ptvEvaluatedCurvePts, fAniLength);
+            drawBezier(Point(r0_x, r0_y), Point(r1_x, r1_y), Point(r2_x, r2_y), p3, ptvEvaluatedCurvePts, fAniLength);
+        }
+        
+        
+    } else if (s_DeCaste) {
+    
+        for(float n=0; n < s_iSegCount; n++){
+            
+            float u = ((float)n)/((float)s_iSegCount - 1);
+        
+            float q0_x = ( (1 - u) * p0.x + u * p1.x) ;
+            float q0_y = ( (1 - u) * p0.y + u * p1.y) ;
+        
+            float q1_x = ((1 - u) * p1.x + u * p2.x) ;
+            float q1_y = ((1 - u) * p1.y + u * p2.y) ;
+            
+            float q2_x = ((1 - u) * p2.x + u * p3.x) ;
+            float q2_y = ((1 - u) * p2.y + u * p3.y) ;
+            
+        
+            float r0_x = ((1 - u) * q0_x + u * q1_x) ;
+            float r0_y = ((1 - u) * q0_y + u * q1_y) ;
+            
+            float r1_x = ((1 - u) * q1_x + u * q2_x) ;
+            float r1_y = ((1 - u) * q1_y + u * q2_y) ;
+            
+            float pu_x = ((1 - u) * r0_x + u * r1_x) ;
+            float pu_y = ((1 - u) * r0_y + u * r1_y) ;
+            
+            ptvEvaluatedCurvePts.push_back(Point(pu_x, pu_y));
+            std::cout << "x, y: " << pu_x <<"," << pu_y << std::endl;
+
+        }
+        
+        
+    } else {
+        
+        for(float n=0; n < s_iSegCount; n++){
+            
+            float u = ((float)n)/((float)s_iSegCount-1);
+            
+            float factor = parameter(3,0) * pow(u,0) * pow((1-u),3-0);
+            float x = factor*(p0.x);
+            float y = factor*(p0.y);
+            
+            factor =  parameter(3,1) * pow(u,1) * pow((1-u),3-1);
+            x += factor*(p1.x);
+            y += factor*(p1.y);
+            
+            factor =  parameter(3,2) * pow(u,2) * pow((1-u),3-2);
+            x += factor*(p2.x);
+            y += factor*(p2.y);
+            
+            factor =  parameter(3,3) * pow(u,3) * pow((1-u),3-3);
+            x += factor*(p3.x);
+            y += factor*(p3.y);
+            
+            x = x > fAniLength ? x - fAniLength : x;
+            
+            ptvEvaluatedCurvePts.push_back(Point(x,y));
+            std::cout << "x, y: " << x <<"," << y << std::endl;
+        
+        }
+    }
+}
+
+
 void BezierCurveEvaluator::evaluateCurve(const std::vector<Point>& ptvCtrlPts,
                                          std::vector<Point>& ptvEvaluatedCurvePts,
                                          const float& fAniLength,
                                          const bool& bWrap) const
 {
+    if (s_AddNewPt) return;
+    
+        
+    std::cout << "subCon: true " << s_SubCon << std::endl;
+    
     int iCtrlPtCount = ptvCtrlPts.size();
     ptvEvaluatedCurvePts.assign(ptvCtrlPts.begin(), ptvCtrlPts.end());
     ptvEvaluatedCurvePts.clear();
@@ -65,63 +209,25 @@ void BezierCurveEvaluator::evaluateCurve(const std::vector<Point>& ptvCtrlPts,
     }
     
     
+    std::vector <float> atanRecod;
+    
     // Bezier
     
+    int count = -1;
     int i = 0;
+    float gap = 1;
     for (; i + 3 < iCtrlPtCount; i += 3){
         
-            for(float n=0; n < s_iSegCount; n++){
-        
-                float u = ((float)n)/((float)s_iSegCount-1);
-                float x=0;
-                float y=0;
-                
-                for(int j=0; j < 4;j++){
-                    float factor =  parameter(3,j) * pow(u,j) * pow((1-u),3-j);
-                    x += factor*(ptvCtrlPts[j+i].x);
-                    y += factor*(ptvCtrlPts[j+i].y);
-                }
-                ptvEvaluatedCurvePts.push_back(Point(x,y));
-            }
-        }
+        drawBezier( ptvCtrlPts[i],  ptvCtrlPts[i+1], ptvCtrlPts[i+2], ptvCtrlPts[i+3], ptvEvaluatedCurvePts, fAniLength);
+    }
     
     
     if (bWrap) {
         
-        std::cout << "i" << i << std::endl;
         
         if (iCtrlPtCount - i == 3) {
         
-            for(float n=0; n < s_iSegCount; n++){
-                
-                float u = ((float)n)/((float)s_iSegCount-1);
-                float x=0;
-                float y=0;
-                
-                for(int j=0; j < 4;j++){
-                    
-                    float factor =  parameter(3,j) * pow(u,j) * pow((1-u),3-j);
-                    
-                    int index = i + j >= iCtrlPtCount ? 0 : i + j;
-                    
-                    float x_temp = ptvCtrlPts[index].x;
-                    float y_temp = ptvCtrlPts[index].y;
-                
-                    if (index == 0)
-                        x_temp += fAniLength;
-                    
-                    x += factor*(x_temp);
-                    y += factor*(y_temp);
-                    
-                    std::cout << "index" << index << std::endl;
-                    
-                }
-                std::cout << "x, y: " << x << "," << y << std::endl;
-                
-                x = x > fAniLength ? x - fAniLength : x;
-                
-                ptvEvaluatedCurvePts.push_back(Point(x,y));
-            }
+            drawBezier(ptvCtrlPts[i],  ptvCtrlPts[i+1], ptvCtrlPts[i+2], Point(ptvCtrlPts[0].x + fAniLength, ptvCtrlPts[0].y), ptvEvaluatedCurvePts, fAniLength);
             
             
         } else {

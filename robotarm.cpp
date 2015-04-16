@@ -128,9 +128,12 @@ void RobotArm::draw()
 	rotation_base(h1);						// draw the rotation base
 
     glTranslatef( 0.0, h1, 0.0 );			// move to the top of the base
-	glPushMatrix();
+	
+    glPushMatrix();
 			glTranslatef( 0.5, h1, 0.6 );	
 	glPopMatrix();
+    
+    
     glRotatef( phi, 0.0, 0.0, 1.0 );		// rotate around the z-axis for the lower arm
 	glTranslatef( -0.1, 0.0, 0.4 );
 	lower_arm(h2);							// draw the lower arm

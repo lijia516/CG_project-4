@@ -1,5 +1,5 @@
-#ifndef INCLUDED_BSPLINE_CURVE_EVALUATOR_H
-#define INCLUDED_BSPLINE_CURVE_EVALUATOR_H
+#ifndef INCLUDED_ADAPTIVEBEZIER_CURVE_EVALUATOR_H
+#define INCLUDED_ADAPTIVEBEZIER_CURVE_EVALUATOR_H
 
 #pragma warning(disable : 4786)  
 
@@ -7,7 +7,7 @@
 
 //using namespace std;
 
-class BezierCurveEvaluator : public CurveEvaluator
+class AdaptiveBezierCurveEvaluator : public CurveEvaluator
 {
 public:
 	void evaluateCurve(const std::vector<Point>& ptvCtrlPts, 
@@ -15,7 +15,6 @@ public:
 		const float& fAniLength, 
 		const bool& bWrap) const;
     
-    void drawBezier( Point p0,  Point p1, Point p2, Point p3, std::vector<Point>& ptvEvaluatedCurvePts, float fAniLength) const;
     
     int parameter(int n, int k) const;
     

@@ -17,6 +17,9 @@ public:
 							   const bool& wrap_control_points) const = 0;
 	static float s_fFlatnessEpsilon;
 	static int s_iSegCount;
+    static bool s_AddNewPt;
+    static bool s_SubCon;
+    static bool s_DeCaste;
 };
 
 

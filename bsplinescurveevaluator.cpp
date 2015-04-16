@@ -8,6 +8,9 @@ void BsplinesCurveEvaluator::evaluateCurve(const std::vector<Point>& ptvCtrlPts,
                                          const float& fAniLength,
                                          const bool& bWrap) const
 {
+    
+    if (s_AddNewPt) return; 
+    
     int iCtrlPtCount = ptvCtrlPts.size();
     ptvEvaluatedCurvePts.assign(ptvCtrlPts.begin(), ptvCtrlPts.end());
     ptvEvaluatedCurvePts.clear();

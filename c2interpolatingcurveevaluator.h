@@ -5,7 +5,7 @@
 
 #include "curveevaluator.h"
 #include "mat.h"
-
+#include "vec.h"
 //using namespace std;
 
 class C2interpolatingCurveEvaluator : public CurveEvaluator

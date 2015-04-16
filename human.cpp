@@ -339,28 +339,6 @@ void Human::draw()
     glPopMatrix();
     
     
-    /*
-    glTranslatef( 0.0, 0.8, 0.0 );			// move to the top of the base
-    glRotatef( theta, 0.0, 1.0, 0.0 );		// turn the whole assembly around the y-axis.
-	rotation_base(h1);						// draw the rotation base
-
-    glTranslatef( 0.0, h1, 0.0 );			// move to the top of the base
-	glPushMatrix();
-			glTranslatef( 0.5, h1, 0.6 );	
-	glPopMatrix();
-    glRotatef( phi, 0.0, 0.0, 1.0 );		// rotate around the z-axis for the lower arm
-	glTranslatef( -0.1, 0.0, 0.4 );
-	lower_arm(h2);							// draw the lower arm
-
-    glTranslatef( 0.0, h2, 0.0 );			// move to the top of the lower arm
-    glRotatef( psi, 0.0, 0.0, 1.0 );		// rotate  around z-axis for the upper arm
-	upper_arm(h3);							// draw the upper arm
-
-	glTranslatef( 0.0, h3, 0.0 );
-	glRotatef( cr, 0.0, 0.0, 1.0 );
-	claw(1.0);
-     
-     */
 
     Mat4f particleXform = matCamInverse * glGetMatrix(GL_MODELVIEW_MATRIX);
     ParticleSystem::particleOrigin = particleXform * Vec4f(0,0,0,1);
