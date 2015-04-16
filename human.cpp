@@ -11,6 +11,7 @@
 #include "modelerdraw.h"
 #include "particleSystem.h"
 
+#include <math.h>
 #include "mat.h"
 #include <FL/gl.h>
 #include <cstdlib>
@@ -32,7 +33,8 @@ Vec4f ParticleSystem::particleOrigin = Vec4f(0,0,0,1);
 enum RobotArmControls
 {
     
-    PELVIS_R=0, LTHIGH_RX, LTHIGH_RY,LTHIGH_RZ, RTHIGH_RX, RTHIGH_RY, RTHIGH_RZ, ABDOMEN, LSHIN_RX, RSHIN_RX, LFOOT_RX, LFOOT_RY, LFOOT_RZ, RFOOT_RX, RFOOT_RY, RFOOT_RZ,
+    PELVIS_R=0, LTHIGH_RX, LTHIGH_RY,LTHIGH_RZ, RTHIGH_RX, RTHIGH_RY, RTHIGH_RZ, ABDOMEN, LSHIN_RX, RSHIN_RX, LFOOT_RX, LFOOT_RY, LFOOT_RZ, RFOOT_RX, RFOOT_RY, RFOOT_RZ, SPINE_RX, SPINE_RY, SPINE_RZ, HEAD_RX, HEAD_RY, HEAD_RZ, LSCAPULA_RX, LSCAPULA_RY, LSCAPULA_RZ, RSCAPULA_RX, RSCAPULA_RY, RSCAPULA_RZ, RFOREARM_RX, RFOREARM_RY, LFOREARM_RX, LFOREARM_RY, LHAND_RX, LHAND_RY, LHAND_RZ, RHAND_RX, RHAND_RY, RHAND_RZ, THIGH_EXLEN,
+        LBICEP_EXLEN, RBICEP_EXLEN,
     
     PARTICLE_COUNT, NUMCONTROLS,
     LTHIGH_H, RTHIGH_H, LSHIN_H, RSHIN_H,
@@ -46,6 +48,16 @@ void thigh(float h);
 void pelvis(float h);
 void shin(float h);
 void foot(float h);
+void abdomen(float h);
+void spine(float h);
+void head(float h);
+void scapula(float h, char d);
+void bicep(float h);
+void forearm(float h);
+void hand(float h);
+void chest(float h);
+void clavicle(float h);
+
 
 void y_box(float h);
 Mat4f glGetMatrix(GLenum pname);
@@ -119,6 +131,43 @@ void Human::draw()
     float rfoot_ry = VAL( RFOOT_RY );
     float rfoot_rz = VAL( RFOOT_RZ );
     
+    float spine_rx = VAL( SPINE_RX );
+    float spine_ry = VAL( SPINE_RY );
+    float spine_rz = VAL( SPINE_RZ );
+    
+    float head_rx = VAL( HEAD_RX );
+    float head_ry = VAL( HEAD_RY );
+    float head_rz = VAL( HEAD_RZ );
+    
+    float lscapula_rx = VAL( LSCAPULA_RX );
+    float lscapula_ry = VAL( LSCAPULA_RY );
+    float lscapula_rz = VAL( LSCAPULA_RZ );
+    
+    float rscapula_rx = VAL( RSCAPULA_RX );
+    float rscapula_ry = VAL( RSCAPULA_RY );
+    float rscapula_rz = VAL( RSCAPULA_RZ );
+    
+    
+    float lforearm_rx = VAL( LFOREARM_RX );
+    float lforearm_ry = VAL( LFOREARM_RY );
+    
+    float rforearm_rx = VAL( RFOREARM_RX );
+    float rforearm_ry = VAL( RFOREARM_RY );
+    
+    float lhand_rx = VAL( LHAND_RX );
+    float lhand_ry = VAL( LHAND_RY );
+    float lhand_rz = VAL( LHAND_RZ );
+    
+    float rhand_rx = VAL( RHAND_RX );
+    float rhand_ry = VAL( RHAND_RY );
+    float rhand_rz = VAL( RHAND_RZ );
+    
+    
+    float thigh_exlen = VAL( THIGH_EXLEN );
+    float lbicep_len = VAL(LBICEP_EXLEN);
+    float rbicep_len = VAL(RBICEP_EXLEN);
+    
+    
 
     // This call takes care of a lot of the nasty projection 
     // matrix stuff
@@ -139,58 +188,160 @@ void Human::draw()
 
 	ground(-0.2);
 
-    glTranslatef( 0.0, 2.5, 0.0 );
+    glTranslatef( 0.0, 2.45, 0.0 );
     
     glPushMatrix();
     
+        glTranslatef( 0.0, thigh_exlen, 0.0 );
         glRotatef(pelvis_r, 0.0, 1.0, 0.0 );
         pelvis(1);
+    
+            // left leg and foot
             glPushMatrix();
-                glTranslatef( 0.5, 0.0, 0.0 );
-                glRotatef(lthigh_rx, 0.0, 0.0, 1.0 );
+                glTranslatef( 0.3, 0.0, 0.0 );
+                glRotatef(lthigh_rx, 1.0, 0.0, 0.0 );
                 glRotatef(lthigh_ry, 0.0, 1.0, 0.0 );
-                glRotatef(lthigh_rz, 1.0, 0.0, 0.0 );
-                thigh(1);
+                glRotatef(lthigh_rz, 0.0, 0.0, 1.0 );
+                thigh(thigh_exlen);
+                glTranslatef( 0.0, -thigh_exlen, 0.0 );
                 glPushMatrix();
                     glTranslatef( 0.0, -1, 0.0 );
                     glRotatef(lshin_rx, 1.0, 0.0, 0.0 );
                     shin(1);
                     glPushMatrix();
-                        glTranslatef( 0.0, -1.1, 0.0 );
-                        glRotatef(lfoot_rx, 0.0, 0.0, 1.0 );
+                        glTranslatef( 0.0, -1.3, 0.0 );
+                        glRotatef(lfoot_rx, 1.0, 0.0, 0.0 );
                         glRotatef(lfoot_ry, 0.0, 1.0, 0.0 );
-                        glRotatef(lfoot_rz, 1.0, 0.0, 0.0 );
+                        glRotatef(lfoot_rz, 0.0, 0.0, 1.0 );
                         foot(2);
                     glPopMatrix();
     
                 glPopMatrix();
             glPopMatrix();
     
+            // right leg and foot
             glPushMatrix();
-                glTranslatef( -0.5, 0.0, 0.0 );
-                glRotatef(rthigh_rx, 0.0, 0.0, 1.0 );
+                glTranslatef( -0.3, 0.0, 0.0 );
+                glRotatef(rthigh_rx, 1.0, 0.0, 0.0 );
                 glRotatef(rthigh_ry, 0.0, 1.0, 0.0 );
-                glRotatef(rthigh_rz, 1.0, 0.0, 0.0 );
-                thigh(1);
+                glRotatef(rthigh_rz, 0.0, 0.0, 1.0 );
+                thigh(thigh_exlen);
+                glTranslatef( 0.0, -thigh_exlen, 0.0 );
                 glPushMatrix();
                     glTranslatef( 0.0, -1, 0.0 );
                     glRotatef(rshin_rx, 1.0, 0.0, 0.0 );
                     shin(1);
                     glPushMatrix();
-                        glTranslatef( 0.0, -1.1, 0.0 );
-                        glRotatef(rfoot_rx, 0.0, 0.0, 1.0 );
+                        glTranslatef( 0.0, -1.3, 0.0 );
+                        glRotatef(rfoot_rx, 1.0, 0.0, 0.0 );
                         glRotatef(rfoot_ry, 0.0, 1.0, 0.0 );
-                        glRotatef(rfoot_rz, 1.0, 0.0, 0.0 );
+                        glRotatef(rfoot_rz, 0.0, 0.0, 1.0 );
                         foot(2);
                     glPopMatrix();
                 glPopMatrix();
             glPopMatrix();
+    
+    
+            // trunk
+            glPushMatrix();
+                glRotatef(spine_rx, 1.0, 0.0, 0.0 );
+                glRotatef(spine_ry, 0.0, 1.0, 0.0 );
+                glRotatef(spine_rz, 0.0, 0.0, 1.0 );
+                abdomen(1);
+                    glPushMatrix();
+                        glTranslatef( 0.0, 1, 0.0 );
+                        spine(1);
+    
+                        glPushMatrix();
+                            glTranslatef( 0.0, 0.6, 0.0 );
+                            glRotatef(head_rx, 1.0, 0.0, 0.0 );
+                            glRotatef(head_ry, 0.0, 1.0, 0.0 );
+                            glRotatef(head_rz, 0.0, 0.0, 1.0 );
+                            head(1);
+    
+                        glPopMatrix();
+    
+                        glPushMatrix();
+                            glTranslatef( 0.0, -0.1, 0.0 );
+                            clavicle(1);
+    
+                        glPopMatrix();
+    
+                        glPushMatrix();
+                            glTranslatef( 0.0, -0.2, 0.0 );
+                            chest(1);
+    
+                        glPopMatrix();
+    
+                        // left arm
+                        glPushMatrix();
+                            glTranslatef( 0.6, 0.2, 0.0 );
+                            scapula(1, 'l');
+                                glPushMatrix();
+                                glRotatef(lscapula_rx, 1.0, 0.0, 0.0 );
+                                glRotatef(lscapula_ry, 0.0, 1.0, 0.0 );
+                                glRotatef(lscapula_rz, 0.0, 0.0, 1.0 );
+                                bicep(lbicep_len);
+                                glTranslatef( 0.0, -lbicep_len, 0.0 );
+                                    glPushMatrix();
+                                        glTranslatef( 0.0, -0.8, 0.0 );
+                                        glTranslatef( 0.0, -lbicep_len, 0.0 );
+                                        glRotatef(lforearm_rx, 1.0, 0.0, 0.0 );
+                                        glRotatef(lforearm_ry, 0.0, 1.0, 0.0 );
+                                        forearm(1);
+                                        glPushMatrix();
+                                            glTranslatef( 0.0, -0.7 , 0.0 );
+                                            glRotatef(lhand_rx, 1.0, 0.0, 0.0 );
+                                            glRotatef(lhand_ry, 0.0, 1.0, 0.0 );
+                                            glRotatef(lhand_rz, 0.0, 0.0, 1.0 );
+                                            hand(1);
+                                        glPopMatrix();
+                                    glPopMatrix();
+                                glPopMatrix();
+                        glPopMatrix();
+    
+    
+                        // right arm
+                        glPushMatrix();
+                            glTranslatef( -0.6, 0.2, 0.0 );
+                            scapula(1, 'r');
+                            glPushMatrix();
+                                glRotatef(rscapula_rx, 1.0, 0.0, 0.0 );
+                                glRotatef(rscapula_ry, 0.0, 1.0, 0.0 );
+                                glRotatef(rscapula_rz, 0.0, 0.0, 1.0 );
+                                bicep(rbicep_len);
+                                glTranslatef( 0.0, -rbicep_len, 0.0 );
+                                glPushMatrix();
+                                    glTranslatef( 0.0, -0.8, 0.0 );
+                                    glTranslatef( 0.0, -rbicep_len, 0.0 );
+                                    glRotatef(rforearm_rx, 1.0, 0.0, 0.0 );
+                                    glRotatef(rforearm_ry, 0.0, 1.0, 0.0 );
+                                    forearm(1);
+                                    glPushMatrix();
+                                        glTranslatef( 0.0, -0.7, 0.0 );
+    
+                                        glRotatef(rhand_rx, 1.0, 0.0, 0.0 );
+                                        glRotatef(rhand_ry, 0.0, 1.0, 0.0 );
+                                        glRotatef(rhand_rz, 0.0, 0.0, 1.0 );
+    
+                                        hand(1);
+                                    glPopMatrix();
+                                glPopMatrix();
+                            glPopMatrix();
+                        glPopMatrix();
+    
+                    glPopMatrix();
+    
+            glPopMatrix();
+    
+    
+    
     glPopMatrix();
     
     
     /*
     glTranslatef( 0.0, 0.8, 0.0 );			// move to the top of the base
-    glRotatef( theta, 0.0, 1.0, 0.0 );		// turn the whole assembly around the y-axis. 
+    glRotatef( theta, 0.0, 1.0, 0.0 );		// turn the whole assembly around the y-axis.
 	rotation_base(h1);						// draw the rotation base
 
     glTranslatef( 0.0, h1, 0.0 );			// move to the top of the base
@@ -242,7 +393,7 @@ void pelvis(float pelvis_r) {
     
     glPushMatrix();
         glRotatef(90,0,1,0);
-        glScalef(trunk_fat*1.33 * 3,pelvis_len/2 * 3,trunk_width/2*1.5 * 3);
+        glScalef(trunk_fat*1.33 * 2,pelvis_len/2 * 3,trunk_width/2*1.5 * 3);
         drawSphere(1);
     glPopMatrix();
     
@@ -257,9 +408,10 @@ void thigh(float h) {
      glColor3f(0,1,0);
     
      glPushMatrix();
-        glScalef(leg_fat*1.75 * 3, thigh_len/2 * 3, leg_fat*1.75 * 3);
+        glScalef(leg_fat*1.75 * 3, thigh_len/2 * 3 + h / 2, leg_fat*1.75 * 3);
         glTranslatef(0, -1, 0);
         drawSphere(1);
+        y_box(h);
     glPopMatrix();
     
 }
@@ -272,7 +424,7 @@ void shin(float h) {
     setAmbientColor( 0.25, 0.25, 0.25 );
     
     glPushMatrix();
-        glScalef(leg_fat * 3, shin_len/2 * 3, leg_fat * 3);
+        glScalef(leg_fat * 3, shin_len/2 * 3.5, leg_fat * 3);
         glTranslatef(0, -1, 0);
         drawSphere(1);
     glPopMatrix();
@@ -294,52 +446,195 @@ void foot(float h) {
 
 
 
+void chest(float chest_r) {
+    
+    setDiffuseColor( 0.25, 0.25, 0.25 );
+    setAmbientColor( 0.25, 0.25, 0.25 );
+    
+    glColor3f(0,0,1);
+    
+    glPushMatrix();
+    glRotatef(90,0,1,0);
+    glScalef(trunk_fat*1.33 * 3,pelvis_len/2 * 3,trunk_width/2*1.5 * 3);
+    drawSphere(1);
+    glPopMatrix();
+    
+}
 
 
+void clavicle(float h) {
+    
+    setDiffuseColor( 0.25, 0.25, 0.25 );
+    setAmbientColor( 0.25, 0.25, 0.25 );
+    
+    glPushMatrix();
+    //glRotatef(90,1,0,0);
+    glTranslatef(0.0, pelvis_len/2, 0.0);
+    glScalef(trunk_fat * 4.5, abdomen_len/2 * 2, trunk_width/2 * 3);
+    glTranslatef(0, 1, 0);
+    drawSphere(1);
+    glPopMatrix();
+}
+
+void abdomen(float h) {
+    
+    setDiffuseColor( 0.25, 0.25, 0.25 );
+    setAmbientColor( 0.25, 0.25, 0.25 );
+    
+    glPushMatrix();
+        //glRotatef(90,1,0,0);
+        glTranslatef(0.0, pelvis_len/2, 0.0);
+        glScalef(trunk_fat * 3, abdomen_len/2 * 2, trunk_width/2 * 3);
+        glTranslatef(0, 1, 0);
+        drawSphere(1);
+    glPopMatrix();
+}
+
+
+void spine(float h) {
+    
+    
+    setDiffuseColor( 0.25, 0.25, 0.25 );
+    setAmbientColor( 0.25, 0.25, 0.25 );
+    
+    glPushMatrix();
+    // glRotatef(90,0,1,0);
+        glScalef(trunk_fat*.66 * 3, spine_len/2 * 3, trunk_fat*.66 * 3);
+        glTranslatef(-0.3, 0, -0.8);
+        drawBox(0.8,2.8,0.8);
+    glPopMatrix();
+}
+
+
+void head(float h) {
+    
+    setDiffuseColor( 0.25, 0.25, 0.25 );
+    setAmbientColor( 0.25, 0.25, 0.25 );
+    
+    glPushMatrix();
+    // glRotatef(90,0,1,0);
+        glScalef(head_width/2 * 3, head_len/2 * 3, head_width/2 * 3);
+        glTranslatef(0., 1.+neck_len/head_len*.5, 0.);
+        drawSphere(1);
+    glPopMatrix();
+}
+
+
+
+void scapula(float h, char d) {
+    
+    setDiffuseColor( 0.25, 0.25, 0.25 );
+    setAmbientColor( 0.25, 0.25, 0.25 );
+    
+    glPushMatrix();
+    
+    if (d == 'l') {
+        glRotatef(45,0,0,1);
+    } else {
+        glRotatef(-45,0,0,1);
+    }
+    
+        glScalef(trunk_fat * 2, scapula_len/2 * 2, trunk_fat * 2);
+        glTranslatef(0, 1, 0);
+        drawSphere(1);
+    glPopMatrix();
+    
+}
+
+
+
+void bicep(float h) {
+    
+    setDiffuseColor( 0.25, 0.25, 0.25 );
+    setAmbientColor( 0.25, 0.25, 0.25 );
+    
+    glPushMatrix();
+    // glRotatef(90,0,1,0);
+    
+        glScalef(arm_fat*1.75 * 3, bicep_len/2 * 3 + h, arm_fat*1.75 * 3);
+        glTranslatef(0, -1, 0);
+        drawSphere(1);
+    glPopMatrix();
+    
+}
+
+
+void forearm(float h) {
+    
+    setDiffuseColor( 0.25, 0.25, 0.25 );
+    setAmbientColor( 0.25, 0.25, 0.25 );
+    
+    glPushMatrix();
+    // glRotatef(90,0,1,0);
+    
+        glScalef(arm_fat * 3, forearm_len/2 * 3, arm_fat * 3);
+        glTranslatef(0, -1, 0);
+        drawSphere(1);
+    glPopMatrix();
+    
+}
+
+
+void hand(float h) {
+    
+    
+    setDiffuseColor( 0.25, 0.25, 0.25 );
+    setAmbientColor( 0.25, 0.25, 0.25 );
+    
+    glPushMatrix();
+   // glRotatef(90,0,1,0);
+    
+        glScalef(arm_fat * 2, hand_len/2 * 2, arm_fat/4 * 2);
+        glTranslatef(0, -1, 0);
+        drawSphere(1);
+    glPopMatrix();
+    
+}
 
 
 void y_box(float h) {
-
-	glBegin( GL_QUADS );
-
-	glNormal3d( 1.0 ,0.0, 0.0);			// +x side
-	glVertex3d( 0.25,0.0, 0.25);
-	glVertex3d( 0.25,0.0,-0.25);
-	glVertex3d( 0.25,  h,-0.25);
-	glVertex3d( 0.25,  h, 0.25);
-
-	glNormal3d( 0.0 ,0.0, -1.0);		// -z side
-	glVertex3d( 0.25,0.0,-0.25);
-	glVertex3d(-0.25,0.0,-0.25);
-	glVertex3d(-0.25,  h,-0.25);
-	glVertex3d( 0.25,  h,-0.25);
-
-	glNormal3d(-1.0, 0.0, 0.0);			// -x side
-	glVertex3d(-0.25,0.0,-0.25);
-	glVertex3d(-0.25,0.0, 0.25);
-	glVertex3d(-0.25,  h, 0.25);
-	glVertex3d(-0.25,  h,-0.25);
-
-	glNormal3d( 0.0, 0.0, 1.0);			// +z side
-	glVertex3d(-0.25,0.0, 0.25);
-	glVertex3d( 0.25,0.0, 0.25);
-	glVertex3d( 0.25,  h, 0.25);
-	glVertex3d(-0.25,  h, 0.25);
-
-	glNormal3d( 0.0, 1.0, 0.0);			// top (+y)
-	glVertex3d( 0.25,  h, 0.25);
-	glVertex3d( 0.25,  h,-0.25);
-	glVertex3d(-0.25,  h,-0.25);
-	glVertex3d(-0.25,  h, 0.25);
-
-	glNormal3d( 0.0,-1.0, 0.0);			// bottom (-y)
-	glVertex3d( 0.25,0.0, 0.25);
-	glVertex3d(-0.25,0.0, 0.25);
-	glVertex3d(-0.25,0.0,-0.25);
-	glVertex3d( 0.25,0.0,-0.25);
-
-	glEnd();
+    
+    glBegin( GL_QUADS );
+    
+    glNormal3d( 1.0 ,0.0, 0.0);			// +x side
+    glVertex3d( 0.25,0.0, 0.25);
+    glVertex3d( 0.25,0.0,-0.25);
+    glVertex3d( 0.25,  h,-0.25);
+    glVertex3d( 0.25,  h, 0.25);
+    
+    glNormal3d( 0.0 ,0.0, -1.0);		// -z side
+    glVertex3d( 0.25,0.0,-0.25);
+    glVertex3d(-0.25,0.0,-0.25);
+    glVertex3d(-0.25,  h,-0.25);
+    glVertex3d( 0.25,  h,-0.25);
+    
+    glNormal3d(-1.0, 0.0, 0.0);			// -x side
+    glVertex3d(-0.25,0.0,-0.25);
+    glVertex3d(-0.25,0.0, 0.25);
+    glVertex3d(-0.25,  h, 0.25);
+    glVertex3d(-0.25,  h,-0.25);
+    
+    glNormal3d( 0.0, 0.0, 1.0);			// +z side
+    glVertex3d(-0.25,0.0, 0.25);
+    glVertex3d( 0.25,0.0, 0.25);
+    glVertex3d( 0.25,  h, 0.25);
+    glVertex3d(-0.25,  h, 0.25);
+    
+    glNormal3d( 0.0, 1.0, 0.0);			// top (+y)
+    glVertex3d( 0.25,  h, 0.25);
+    glVertex3d( 0.25,  h,-0.25);
+    glVertex3d(-0.25,  h,-0.25);
+    glVertex3d(-0.25,  h, 0.25);
+    
+    glNormal3d( 0.0,-1.0, 0.0);			// bottom (-y)
+    glVertex3d( 0.25,0.0, 0.25);
+    glVertex3d(-0.25,0.0, 0.25);
+    glVertex3d(-0.25,0.0,-0.25);
+    glVertex3d( 0.25,0.0,-0.25);
+    
+    glEnd();
 }
+
 
 int main()
 {
@@ -369,14 +664,45 @@ int main()
     controls[RFOOT_RY ] = ModelerControl("rfoot y rotation", -45.0, 45.0, 0.1, 0.0 );
     controls[RFOOT_RZ ] = ModelerControl("rfoot z rotation", -45.0, 45.0, 0.1, 0.0 );
     
+    controls[SPINE_RX ] = ModelerControl("spine x rotation", -180.0, 180.0, 0.1, 0.0 );
+    controls[SPINE_RY ] = ModelerControl("spine y rotation", -90.0, 90.0, 0.1, 0.0 );
+    controls[SPINE_RZ ] = ModelerControl("spine z rotation", -160.0, 160, 0.1, 0.0 );
     
- //   controls[LOWER_TILT] = ModelerControl("lower arm tilt (phi)", 15.0, 95.0, 0.1, 55.0 );
-//    controls[UPPER_TILT] = ModelerControl("upper arm tilt (psi)", 0.0, 135.0, 0.1, 30.0 );
-//	controls[CLAW_ROTATION] = ModelerControl("claw rotation (cr)", -30.0, 180.0, 0.1, 0.0 );
-//    controls[BASE_LENGTH] = ModelerControl("base height (h1)", 0.5, 10.0, 0.1, 0.8 );
-//    controls[LOWER_LENGTH] = ModelerControl("lower arm length (h2)", 1, 10.0, 0.1, 3.0 );
-//    controls[UPPER_LENGTH] = ModelerControl("upper arm length (h3)", 1, 10.0, 0.1, 2.5 );
-//    controls[PARTICLE_COUNT] = ModelerControl("particle count (pc)", 0.0, 5.0, 0.1, 5.0 );
+    controls[HEAD_RX ] = ModelerControl("head x rotation", -90.0, 90.0, 0.1, 0.0 );
+    controls[HEAD_RY ] = ModelerControl("head y rotation", -180.0, 180.0, 0.1, 0.0 );
+    controls[HEAD_RZ ] = ModelerControl("head z rotation", -90.0, 90.0, 0.1, 0.0 );
+    
+    
+    controls[LSCAPULA_RX ] = ModelerControl("lscapula x rotation", -90.0, 180.0, 0.1, 0.0 );
+    controls[LSCAPULA_RY ] = ModelerControl("lscapula y rotation", -180.0, 180.0, 0.1, 0.0 );
+    controls[LSCAPULA_RZ ] = ModelerControl("lscapula z rotation", -180.0, 180.0, 0.1, 0.0 );
+    
+    controls[RSCAPULA_RX ] = ModelerControl("rscapula x rotation", -90.0, 180.0, 0.1, 0.0 );
+    controls[RSCAPULA_RY ] = ModelerControl("rscapula y rotation", -180.0, 180.0, 0.1, 0.0 );
+    controls[RSCAPULA_RZ ] = ModelerControl("rscapula z rotation", -180.0, 180.0, 0.1, 0.0 );
+    
+    
+    controls[LFOREARM_RX ] = ModelerControl("lforearm x rotation", 0, 180.0, 0.1, 0.0 );
+    controls[LFOREARM_RY ] = ModelerControl("lforearm y rotation", 0, 90, 0.1, 0.0 );
+    
+    controls[RFOREARM_RX ] = ModelerControl("rforearm x rotation", 0, 180.0, 0.1, 0.0 );
+    controls[RFOREARM_RY ] = ModelerControl("rforearm y rotation", -90, 0, 0.1, 0.0 );
+    
+    
+    controls[LHAND_RX ] = ModelerControl("lhand x rotation", -45, 45, 0.1, 0.0 );
+    controls[LHAND_RY ] = ModelerControl("lhand  y rotation", -90.0, 90, 0.1, 0.0 );
+    controls[LHAND_RZ ] = ModelerControl("lhand  z rotation", -90.0, 90.0, 0.1, 0.0 );
+    
+    controls[RHAND_RX ] = ModelerControl("rhand x rotation", -45, 45.0, 0.1, 0.0 );
+    controls[RHAND_RY ] = ModelerControl("rhand  y rotation", -90.0, 90.0, 0.1, 0.0 );
+    controls[RHAND_RZ ] = ModelerControl("rhand  z rotation", -90.0, 90.0, 0.1, 0.0 );
+    
+    controls[THIGH_EXLEN ] = ModelerControl("thigh extending length", 0, 1, 0.1, 0.0 );
+    controls[RBICEP_EXLEN ] = ModelerControl("rbicep extending length", 0, 1, 0.1, 0.0 );
+    controls[LBICEP_EXLEN ] = ModelerControl("lbicep extending length", 0, 1, 0.1, 0.0 );
+    
+    
+    controls[PARTICLE_COUNT] = ModelerControl("particle count (pc)", 0.0, 5.0, 0.1, 5.0 );
     
 
 	// You should create a ParticleSystem object ps here and then

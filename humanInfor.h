@@ -1,6 +1,6 @@
 #ifndef _HUMANINFOR_H
 #define _HUMANINFOR_H
-
+#include <cmath>
 
 #define total_mass  75.
 #define head_mass  .0792 // total_mass,
@@ -35,7 +35,7 @@
 
 #define arm_fat  .03
 #define shoulder_width  .41
-#define scapula_len  = sqrt(full_spine_len*full_spine_len + shoulder_width*shoulder_width/4)
+#define scapula_len   sqrt(pow(full_spine_len,2) + pow(shoulder_width,2) * 1.0 / 4)
 #define shrug_angle  -atan2(shoulder_width/2, full_spine_len)
 #define bicep_len  .31
 #define forearm_len  .25
