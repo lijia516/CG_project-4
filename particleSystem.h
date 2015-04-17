@@ -76,7 +76,7 @@ public:
 	virtual void clearBaked();
     
     void ponyTail_computeForcesAndUpdateParticles(float t);
-    
+    void cloth_computeForcesAndUpdateParticles(float t);
 
 
 	// These accessor fxns are implemented for you
@@ -118,7 +118,7 @@ protected:
     
     std::map<float, std::vector<Vec3f> > bake_particles;
     std::map<float, std::vector<Vec3f> > bake_particlesPony;
-    std::map<float, std::vector<Vec3f> > cloth_particles;
+    std::map<float, std::vector<Vec3f> > bake_particlesCloth;
     
     
     static Vec3f gravity;
@@ -128,6 +128,7 @@ protected:
     static int particleReal;
     static int particleNum_ponyTail;
     static float spring_K;
+    static float spring_cloth_K;
 
 };
 

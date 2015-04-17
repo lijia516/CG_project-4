@@ -23,6 +23,8 @@ int ParticleSystem::particleReal = 0;
 float ParticleSystem::spring_K = 500;
 int ParticleSystem::particleNum_ponyTail = 8;
 
+float ParticleSystem::spring_cloth_K = 100;
+
 /***************
  * Constructors
  ***************/
@@ -32,6 +34,7 @@ ParticleSystem::ParticleSystem()
 	// TODO
     
     time = 0;
+    
     
     
 }
@@ -76,10 +79,31 @@ void ParticleSystem::startSimulation(float t)
         ponyTail_particles[i] = p;
     }
     
-    int i = 1;
-    std::cout << "position[i]: "<<ponyTail_particles[i]->position[0] << "," << ponyTail_particles[i]->position[1] << "," << ponyTail_particles[i]->position[2] << std::endl;
+
     
-    std::cout << "position[i - 1]: "<<ponyTail_particles[i- 1]->position[0] << "," << ponyTail_particles[i- 1]->position[1] << "," << ponyTail_particles[i- 1]->position[2] << std::endl;
+    // cloth
+    
+     std::cout <<"start simulate " << t << std::endl;
+    cloth_particles = new Particle*[10];
+    for (int i = 0; i < 10; i++) {
+        cloth_particles[i] = new Particle[10];
+    }
+    
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 10; j++) {
+            
+            cloth_particles[i][j].position = Vec3f(0.3 * (j - 5) + 3, 5 - 0.1 * i, - 0.2 * i);
+            cloth_particles[i][j].velocity = Vec3f(0,0,0);
+            cloth_particles[i][j].force = Vec3f(gravity);
+        }
+        
+    }
+    
+    std::cout <<"position: " << cloth_particles[0][0].position[0] <<"," << cloth_particles[0][0].position[1] << "," << cloth_particles[0][0].position[2] << std::endl;
+    
+    std::cout <<"position: " << cloth_particles[9][9].position[0] <<"," << cloth_particles[9][9].position[1] << "," << cloth_particles[9][9].position[2] << std::endl;
+    
+    std::cout <<"assign cloth position done " << t << std::endl;
     
     
     
@@ -183,10 +207,6 @@ void ParticleSystem::computeForcesAndUpdateParticles(float t)
             }
             
             
-         //   (*i)->force[1] += airResistance_cur[1];
-         //   (*i)->force[2] += airResistance_cur[2];
-            
-            
             (*i)->velocity[0] += (*i)->force[0] * 1.0 / (*i)->mass * deltaT * 0.1;
             (*i)->velocity[1] += (*i)->force[1] * 1.0 / (*i)->mass * deltaT * 0.1;
             (*i)->velocity[2] += (*i)->force[2] * 1.0 / (*i)->mass * deltaT * 0.1;
@@ -201,6 +221,7 @@ void ParticleSystem::computeForcesAndUpdateParticles(float t)
         
         
         ponyTail_computeForcesAndUpdateParticles(t);
+        cloth_computeForcesAndUpdateParticles(t);
     }
     
 	// Debugging info
@@ -234,6 +255,8 @@ void ParticleSystem::drawParticles(float t)
              }
          }
          
+         // particles
+         
          for(iter i = particles.begin(); i != particles.end(); ++i) {
              
              glPushMatrix();
@@ -243,6 +266,7 @@ void ParticleSystem::drawParticles(float t)
          }
        
          
+         //ponyTail
          
          for(iter i = ponyTail_particles.begin(); i != ponyTail_particles.end(); ++i) {
              
@@ -263,6 +287,39 @@ void ParticleSystem::drawParticles(float t)
                  glEnd();
              }
              
+         }
+         
+         
+         // cloth
+         
+       //   std::cout <<"draw cloth " << t << std::endl;
+         
+         for (int i = 0; i < 9; i++)
+         {
+             for (int j = 0; j < 9; j++)
+             {
+                 Vec3f p;
+                 
+               //  std::cout <<"inside draw cloth: " << i << "," << j << std::endl;
+                 
+                 p = cloth_particles[i][j].position;
+                 
+                 glPushMatrix();
+                 glTranslated(p[0], p[1], p[2]);
+                 drawSphere(0.05);
+                 glPopMatrix();
+                 
+                     glBegin(GL_QUADS);
+                        glVertex3f(p[0], p[1], p[2]);
+                        p = cloth_particles[i][j + 1].position;
+                        glVertex3f(p[0], p[1], p[2]);
+                        p = cloth_particles[i + 1][j + 1].position;
+                        glVertex3f(p[0], p[1], p[2]);
+                        p = cloth_particles[i + 1][j ].position;
+                        glVertex3f(p[0], p[1], p[2]);
+                     glEnd();
+                 
+             }
          }
          
      } else {
@@ -311,10 +368,7 @@ void ParticleSystem::drawParticles(float t)
                  glVertex3f((*(i-1))[0], (*(i-1))[1], (*(i-1))[2]);
                  glEnd();
              }
-             
          }
-         
-         
      }
     
    // std::cout <<"draw() real number: " <<particleReal << std::endl;
@@ -393,9 +447,32 @@ void ParticleSystem::ponyTail_computeForcesAndUpdateParticles(float t)
             airResistance_cur[1] = 0.5 * airResistance * 4 * 3.1415926 * particleRadius * particleRadius * 0.5 * (*i)->velocity[1] * (*i)->velocity[1];
             airResistance_cur[2] = 0.5 * airResistance * 4 * 3.1415926 * particleRadius * particleRadius * 0.5 * (*i)->velocity[2] * (*i)->velocity[2];
             
-            (*i)->force[0] += airResistance_cur[0];
-            (*i)->force[1] += airResistance_cur[1];
-            (*i)->force[2] += airResistance_cur[2];
+            if ((*i)->velocity[0] > 0) {
+                
+                (*i)->force[0] -= airResistance_cur[0];
+            } else {
+                
+                (*i)->force[0] += airResistance_cur[0];
+            }
+            
+            if ((*i)->velocity[1] > 0) {
+                
+                (*i)->force[1] -= airResistance_cur[1];
+            } else {
+                
+                (*i)->force[1] += airResistance_cur[1];
+            }
+            
+            if ((*i)->velocity[2] > 0) {
+                
+                (*i)->force[2] -= airResistance_cur[2];
+            } else {
+                
+                (*i)->force[2] += airResistance_cur[2];
+            }
+            
+         
+
             
             if (index < particleNum_ponyTail - 1) {
                 
@@ -451,9 +528,160 @@ void ParticleSystem::ponyTail_computeForcesAndUpdateParticles(float t)
         
         bakeParticles(t);
     }
-    
-    // Debugging info
-    if( t - prevT > .04 )
-        printf("(!!) Dropped Frame %lf (!!)\n", t-prevT);
-    prevT = t;
 }
+
+
+
+void ParticleSystem::cloth_computeForcesAndUpdateParticles(float t)
+{
+    // TODO
+    
+    if (isSimulate()) {
+        
+        
+        float deltaT = t - prevT;
+        
+        
+        for (int i = 0; i < 10; i++) {
+            
+            for (int j = 0; j < 10; j++) {
+            
+                
+           //     std::cout << "i,j" << i << "," << j << "," << endl;
+                // F = 1/2 * C * S * V^2
+                Vec3f airResistance_cur = Vec3f(0,0,0);
+                airResistance_cur[0] = 0.5 * airResistance * 2.7 * 0.9 * 1.8 * cloth_particles[i][j].velocity[0] * cloth_particles[i][j].velocity[0];
+                airResistance_cur[1] = 0.5 * airResistance * 2.7 * 0.9 * 1.8 * cloth_particles[i][j].velocity[1] * cloth_particles[i][j].velocity[1];
+                airResistance_cur[2] = 0.5 * airResistance * 2.7 * 0.9 * 1.8 * cloth_particles[i][j].velocity[2] * cloth_particles[i][j].velocity[2];
+                
+                if (cloth_particles[i][j].velocity[0] > 0) {
+                    
+                    cloth_particles[i][j].velocity[0] -= airResistance_cur[0];
+                } else {
+                    
+                    cloth_particles[i][j].velocity[0] += airResistance_cur[0];
+                }
+                
+                if (cloth_particles[i][j].velocity[1] > 0) {
+                    
+                    cloth_particles[i][j].force[1] -= airResistance_cur[1];
+                } else {
+                    
+                    cloth_particles[i][j].force[1] += airResistance_cur[1];
+                }
+                
+                if (cloth_particles[i][j].velocity[2] > 0) {
+                    
+                    cloth_particles[i][j].force[2] -= airResistance_cur[2];
+                } else {
+                    
+                    cloth_particles[i][j].force[2] += airResistance_cur[2];
+                }
+                
+                
+             //   std::cout <<"air res " << airResistance_cur[0] <<"," << airResistance_cur[1] << "," << airResistance_cur[2] << std::endl;
+             //   std::cout <<"after air resistence " << t << std::endl;
+                
+                Vec3f force_left = Vec3f(0,0,0);
+                Vec3f force_right = Vec3f(0,0,0);
+                Vec3f force_up = Vec3f(0,0,0);
+                Vec3f force_down = Vec3f(0,0,0);
+                
+                
+                if (j != 0) {
+                    
+                    Vec3f left = Vec3f(cloth_particles[i][j].position[0] - cloth_particles[i][j - 1].position[0], cloth_particles[i][j].position[1] - cloth_particles[i][j - 1].position[1], cloth_particles[i][j].position[2] - cloth_particles[i][j - 1].position[2]);
+                    
+                    float distance_left = left.length();
+                    left.normalize();
+                    force_left = spring_cloth_K * (0.3 - distance_left) * left;
+                    
+                }
+                
+            //    std::cout <<"left " << force_left[0] <<"," << force_left[1] << "," << force_left[2] << std::endl;
+            //    std::cout <<"after left " << t << std::endl;
+                
+                if (j != 9) {
+                
+                    Vec3f right = Vec3f(cloth_particles[i][j].position[0] - cloth_particles[i][j + 1].position[0], cloth_particles[i][j].position[1] - cloth_particles[i][j+1].position[1], cloth_particles[i][j].position[2] - cloth_particles[i][j + 1].position[2]);
+                    float distance_right = right.length();
+                    right.normalize();
+                    force_right = spring_cloth_K * (0.3 - distance_right) * right;
+                }
+                
+             //    std::cout <<"after right " << t << std::endl;
+                
+                if (i != 0) {
+                    
+                    Vec3f up = Vec3f(cloth_particles[i][j].position[0] - cloth_particles[i - 1 ][j].position[0], cloth_particles[i][j].position[1] - cloth_particles[i - 1][j].position[1], cloth_particles[i][j].position[2] - cloth_particles[i - 1][j].position[2]);
+                    
+                    float distance_up = up.length();
+                    up.normalize();
+                    force_up = spring_cloth_K * (0.23 - distance_up) * up;
+                    
+                }
+                
+             //    std::cout <<"after up " << t << std::endl;
+                
+                if (i != 9) {
+                    
+                    Vec3f down = Vec3f(cloth_particles[i][j].position[0] - cloth_particles[i + 1 ][j].position[0], cloth_particles[i][j].position[1] - cloth_particles[i + 1][j].position[1], cloth_particles[i][j].position[2] - cloth_particles[i + 1][j].position[2]);
+                    
+                    float distance_down = down.length();
+                    down.normalize();
+                    force_down = spring_cloth_K * (0.23 - distance_down) * down;
+                    
+                }
+                
+                
+            //     std::cout <<"after down " << t << std::endl;
+                    
+                    cloth_particles[i][j].force[0] += force_left[0];
+                    cloth_particles[i][j].force[0] += force_right[0];
+                    cloth_particles[i][j].force[0] += force_up[0];
+                    cloth_particles[i][j].force[0] += force_down[0];
+                
+                    cloth_particles[i][j].force[1] += force_left[1];
+                    cloth_particles[i][j].force[1] += force_right[1];
+                    cloth_particles[i][j].force[1] += force_up[1];
+                    cloth_particles[i][j].force[1] += force_down[1];
+                
+                    cloth_particles[i][j].force[2] += force_left[2];
+                    cloth_particles[i][j].force[2] += force_right[2];
+                    cloth_particles[i][j].force[2] += force_up[2];
+                    cloth_particles[i][j].force[2] += force_down[2];
+                    cloth_particles[i][j].force[2] += -0.5;
+                
+                
+                if (cloth_particles[i][j].force.length() > 10) {
+                    cloth_particles[i][j].force.normalize();
+                    cloth_particles[i][j].force *= 10;
+                }
+                
+                
+              //   std::cout <<"force: " << cloth_particles[i][j].force[0] <<"," << cloth_particles[i][j].force[1] << "," << cloth_particles[i][j].force[2] << std::endl;
+                
+             //    std::cout <<"after force caclulate " << t << std::endl;
+                
+                cloth_particles[i][j].velocity[0] += cloth_particles[i][j].force[0] * 1.0 / cloth_particles[i][j].mass * deltaT * 0.01;
+                cloth_particles[i][j].velocity[1] += cloth_particles[i][j].force[1] * 1.0 / cloth_particles[i][j].mass * deltaT * 0.01;
+                cloth_particles[i][j].velocity[2] += cloth_particles[i][j].force[2] * 1.0 / cloth_particles[i][j].mass * deltaT * 0.01;
+                
+                
+              //  std::cout <<"velocity: " << cloth_particles[i][j].velocity[0] <<"," << cloth_particles[i][j].velocity[1] << "," << cloth_particles[i][j].velocity[2] << std::endl;
+                
+                
+                    cloth_particles[i][j].position[0] += cloth_particles[i][j].velocity[0] * deltaT;
+                    cloth_particles[i][j].position[1] += cloth_particles[i][j].velocity[1] * deltaT;
+                    cloth_particles[i][j].position[2] += cloth_particles[i][j].velocity[2] * deltaT;
+                    
+                
+              //   std::cout <<"position: " << cloth_particles[i][j].position[0] <<"," << cloth_particles[i][j].position[1] << "," << cloth_particles[i][j].position[2] << std::endl;
+                
+            }
+        
+        }
+       // bakeParticles(t);
+    }
+}
+
