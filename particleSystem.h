@@ -73,7 +73,10 @@ public:
 
 	// This function should clear out your data structure
 	// of baked particles (without leaking memory).
-	virtual void clearBaked();	
+	virtual void clearBaked();
+    
+    void ponyTail_computeForcesAndUpdateParticles(float t);
+    
 
 
 	// These accessor fxns are implemented for you
@@ -106,17 +109,25 @@ protected:
     /*** particles***/
     
     std::vector<Particle*> particles;
+    std::vector<Particle*> ponyTail_particles;
+    
+    Particle** cloth_particles;
+    
 //    std::vector<std::vector<Particle*> > bake_particles;
     
     
     std::map<float, std::vector<Vec3f> > bake_particles;
+    std::map<float, std::vector<Vec3f> > bake_particlesPony;
+    std::map<float, std::vector<Vec3f> > cloth_particles;
+    
     
     static Vec3f gravity;
+    static float airResistance;
+    static float particleRadius;
     static int particleNum;
     static int particleReal;
-    
-
-    
+    static int particleNum_ponyTail;
+    static float spring_K;
 
 };
 
