@@ -17,7 +17,7 @@ using namespace std;
 static float prevT;
 float ParticleSystem::particleRadius = 0.15;
 Vec3f ParticleSystem::gravity = Vec3f(0, -9.8f, 0);
-float ParticleSystem::airResistance = 1.5;
+float ParticleSystem::airResistance = 0.5;
 int ParticleSystem::particleNum = 500;
 int ParticleSystem::particleReal = 0;
 float ParticleSystem::spring_K = 500;
@@ -25,7 +25,12 @@ int ParticleSystem::particleNum_ponyTail = 8;
 int ParticleSystem::particleNum_cloth_row = 15;
 int ParticleSystem::particleNum_cloth_col = 5;
 float ParticleSystem::deltaX = 0;
+bool ParticleSystem::pony = false;
+bool ParticleSystem::cloth = false;
+bool ParticleSystem::bounceOff = false;
 
+
+Vec3f ori_position = Vec3f(0,0,0);
 
 float ParticleSystem::spring_cloth_K = 100;
 
@@ -47,7 +52,8 @@ ParticleSystem::ParticleSystem()
 ParticleSystem::~ParticleSystem() 
 {
 	// TODO
-    particles.clear();
+
+
 }
 
 
@@ -61,6 +67,10 @@ void ParticleSystem::startSimulation(float t)
 	// TODO
     
     // pony tail
+    
+    particleReal = 0;
+    ori_position = Vec3f(particleOrigin);
+    
     ponyTail_particles.resize(particleNum_ponyTail, NULL);
     Particle* p = new Particle();
     p->position = Vec3f(particleOrigin_pony);
@@ -134,7 +144,14 @@ void ParticleSystem::startSimulation(float t)
 void ParticleSystem::stopSimulation(float t)
 {
 	// TODO
+    
+    particleReal = 0;
     particles.clear();
+    ponyTail_particles.clear();
+    
+    for (int i = 0; i < particleNum_cloth_row; i++) delete[] cloth_particles[i];
+    delete[] cloth_particles;
+    
     
 	// These values are used by the UI
 	simulate = false;
@@ -147,7 +164,12 @@ void ParticleSystem::resetSimulation(float t)
 {
 	// TODO
 
+    particleReal = 0;
     particles.clear();
+    ponyTail_particles.clear();
+    
+    for (int i = 0; i < particleNum_cloth_row; i++) delete[] cloth_particles[i];
+    delete[] cloth_particles;
     
 	// These values are used by the UI
 	simulate = false;
@@ -169,11 +191,20 @@ void ParticleSystem::computeForcesAndUpdateParticles(float t)
         
             time = t;
             
-            if  (particleReal < particleNum) {
+            
+            if (bounceOff) {
+                
+              //   particleNum = 5;
+            }
+            
+            std::cout << "particles.size:" << particles.size() << std::endl;
+            
+            
+            if  (particles.size() < particleNum) {
                 
                 Particle* p = new Particle();
                 p->position = Vec3f(particleOrigin);
-                p->velocity = Vec3f(0, -2, 0);
+                p->velocity = Vec3f(-1, -2, 0);
                 p->force = Vec3f(gravity);
                 particles.push_back(p);
                 particleReal++;
@@ -225,6 +256,43 @@ void ParticleSystem::computeForcesAndUpdateParticles(float t)
             (*i)->position[0] += (*i)->velocity[0] * deltaT;
             (*i)->position[1] += (*i)->velocity[1] * deltaT;
             (*i)->position[2] += (*i)->velocity[2] * deltaT;
+            
+            
+            if(bounceOff) {
+                
+                if ((*i)->position[1] < 0) {
+                    
+                    float len = ((*i)->velocity).length();
+                    
+                    Vec3f N = Vec3f(0,1,0);
+                    Vec3f V = -1 * Vec3f((*i)->velocity);
+                    V.normalize();
+                    
+                    
+                    double NVv = N * V;
+                    Vec3f R = N * 2 * NVv - V;
+                    
+                    R.normalize();
+                    
+                    
+                    std::cout <<"V: " << V[0] << "," << V[1] << "," << V[2] << std::endl;
+                    std::cout <<"R: " << R[0] << "," << R[1] << "," << R[2] << std::endl;
+                    
+                    
+                    
+                    std::cout <<"velocity: " << (*i)->velocity[0] << "," << (*i)->velocity[1] << "," << (*i)->velocity[2] << std::endl;
+                    
+                    
+                    (*i)->velocity[0] = len * R[0];
+                    (*i)->velocity[1] = len * R[1];
+                    (*i)->velocity[2] = len * R[2];
+                    
+                    std::cout <<"velocity: " << (*i)->velocity[0] << "," << (*i)->velocity[1] << "," << (*i)->velocity[2] << std::endl;
+                    
+                }
+                
+            }
+            
 
         }
 
@@ -258,6 +326,9 @@ void ParticleSystem::drawParticles(float t)
          
          typedef vector<Particle*>::const_iterator iter;
          
+         
+         if (!bounceOff) {
+         
          for (iter i = particles.begin(); i != particles.end(); i++) {
  
              if ((*i)->position[1] < 0) {
@@ -268,6 +339,8 @@ void ParticleSystem::drawParticles(float t)
                      particleReal--;
                  }
              }
+         }
+             
          }
          
          // particles
@@ -403,7 +476,7 @@ void ParticleSystem::drawParticles(float t)
              
              index++;
              
-              std::cout <<"index: " << index << std::endl;
+              //std::cout <<"index: " << index << std::endl;
              
              glPushMatrix();
              glTranslated((*i)[0], (*i)[1], (*i)[2]);
@@ -508,7 +581,11 @@ void ParticleSystem::clearBaked()
 	// TODO
     
     bake_particles.clear();
-    
+    bake_particlesPony.clear();
+    bake_particlesCloth.clear();
+    particleReal = 0;
+    particles.clear();
+    std::cout << "particles.size:" << particles.size() << std::endl;
 }
 
 
@@ -518,10 +595,26 @@ void ParticleSystem::ponyTail_computeForcesAndUpdateParticles(float t)
     
     if (isSimulate()) {
         
+        float dx = 0;
+        float dy = 0;
+        float dz = 0;
         
         float deltaT = t - prevT;
         
         typedef vector<Particle*>::const_iterator iter;
+        
+        iter i = ponyTail_particles.begin();
+    
+        
+        if ((*i)->position[0] != particleOrigin_pony[0] ||  (*i)->position[1] != particleOrigin_pony[1] || (*i)->position[2] != particleOrigin_pony[2] ) {
+            
+            (*i)->position = Vec3f(particleOrigin_pony);
+            dx = particleOrigin_pony[0] - (*i)->position[0];
+            dy = particleOrigin_pony[1] - (*i)->position[1];
+            dz = particleOrigin_pony[2] - (*i)->position[2];
+            
+        }
+        
         
         int index = 0;
         
@@ -610,7 +703,11 @@ void ParticleSystem::ponyTail_computeForcesAndUpdateParticles(float t)
             (*i)->position[0] += (*i)->velocity[0] * deltaT;
             (*i)->position[1] += (*i)->velocity[1] * deltaT;
             (*i)->position[2] += (*i)->velocity[2] * deltaT;
-
+            
+            
+            (*i)->position[0] += dx;
+            (*i)->position[1] += dy;
+            (*i)->position[2] += dz;
         }
   
         

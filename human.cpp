@@ -27,8 +27,7 @@ using namespace std;
 Vec4f ParticleSystem::particleOrigin = Vec4f(0,0,0,1);
 Vec4f ParticleSystem::particleOrigin_pony = Vec4f(0,0,0,1);
 Vec4f ParticleSystem::particleOrigin_cloth = Vec4f(0,0,0,1);
-bool ParticleSystem::pony = false;
-bool ParticleSystem::cloth = false;
+
 
 Vec4f ParticleSystem::cloth_start = Vec4f(0,0,0,1);
 Vec4f ParticleSystem::cloth_end = Vec4f(0,0,0,1);
@@ -639,6 +638,7 @@ int main()
     
     ParticleSystem::pony = true;
     ParticleSystem::cloth = true;
+    ParticleSystem::bounceOff  = true;
     
     ModelerControl controls[NUMCONTROLS ];
 

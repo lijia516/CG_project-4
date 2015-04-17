@@ -92,6 +92,7 @@ public:
     static Vec4f particleOrigin_cloth;
     static bool pony;
     static bool cloth;
+    static bool bounceOff;
     static Vec4f cloth_start;
     static Vec4f cloth_end;
     
