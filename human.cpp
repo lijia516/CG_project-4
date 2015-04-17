@@ -25,7 +25,13 @@ using namespace std;
 #define MIN_STEP 0.1
 
 Vec4f ParticleSystem::particleOrigin = Vec4f(0,0,0,1);
+Vec4f ParticleSystem::particleOrigin_pony = Vec4f(0,0,0,1);
+Vec4f ParticleSystem::particleOrigin_cloth = Vec4f(0,0,0,1);
+bool ParticleSystem::pony = false;
+bool ParticleSystem::cloth = false;
 
+Vec4f ParticleSystem::cloth_start = Vec4f(0,0,0,1);
+Vec4f ParticleSystem::cloth_end = Vec4f(0,0,0,1);
 
 // This is a list of the controls for the RobotArm
 // We'll use these constants to access the values 
@@ -33,7 +39,7 @@ Vec4f ParticleSystem::particleOrigin = Vec4f(0,0,0,1);
 enum RobotArmControls
 {
     
-    PELVIS_R=0, LTHIGH_RX, LTHIGH_RY,LTHIGH_RZ, RTHIGH_RX, RTHIGH_RY, RTHIGH_RZ, ABDOMEN, LSHIN_RX, RSHIN_RX, LFOOT_RX, LFOOT_RY, LFOOT_RZ, RFOOT_RX, RFOOT_RY, RFOOT_RZ, SPINE_RX, SPINE_RY, SPINE_RZ, HEAD_RX, HEAD_RY, HEAD_RZ, LSCAPULA_RX, LSCAPULA_RY, LSCAPULA_RZ, RSCAPULA_RX, RSCAPULA_RY, RSCAPULA_RZ, RFOREARM_RX, RFOREARM_RY, LFOREARM_RX, LFOREARM_RY, LHAND_RX, LHAND_RY, LHAND_RZ, RHAND_RX, RHAND_RY, RHAND_RZ, THIGH_EXLEN,
+    PELVIS_R=0, LTHIGH_RX, LTHIGH_RY,LTHIGH_RZ, RTHIGH_RX, RTHIGH_RY, RTHIGH_RZ, LSHIN_RX, RSHIN_RX, LFOOT_RX, LFOOT_RY, LFOOT_RZ, RFOOT_RX, RFOOT_RY, RFOOT_RZ, SPINE_RX, SPINE_RY, SPINE_RZ, HEAD_RX, HEAD_RY, HEAD_RZ, LSCAPULA_RX, LSCAPULA_RY, LSCAPULA_RZ, RSCAPULA_RX, RSCAPULA_RY, RSCAPULA_RZ, RFOREARM_RX, RFOREARM_RY, LFOREARM_RX, LFOREARM_RY, LHAND_RX, LHAND_RY, LHAND_RZ, RHAND_RX, RHAND_RY, RHAND_RZ, THIGH_EXLEN,
         LBICEP_EXLEN, RBICEP_EXLEN,
     
     PARTICLE_COUNT, NUMCONTROLS,
@@ -277,6 +283,10 @@ void Human::draw()
                         glPushMatrix();
                             glTranslatef( 0.6, 0.2, 0.0 );
                             scapula(1, 'l');
+                            Mat4f particleXform3 = matCamInverse * glGetMatrix(GL_MODELVIEW_MATRIX);
+                            ParticleSystem::cloth_start = particleXform3 * Vec4f(0,0,0,1);
+    
+    
                                 glPushMatrix();
                                 glRotatef(lscapula_rx, 1.0, 0.0, 0.0 );
                                 glRotatef(lscapula_ry, 0.0, 1.0, 0.0 );
@@ -295,6 +305,10 @@ void Human::draw()
                                             glRotatef(lhand_ry, 0.0, 1.0, 0.0 );
                                             glRotatef(lhand_rz, 0.0, 0.0, 1.0 );
                                             hand(1);
+    
+                                            Mat4f particleXform2 = matCamInverse * glGetMatrix(GL_MODELVIEW_MATRIX);
+                                            ParticleSystem::particleOrigin_pony = particleXform2 * Vec4f(0,0,0,1);
+    
                                         glPopMatrix();
                                     glPopMatrix();
                                 glPopMatrix();
@@ -305,6 +319,9 @@ void Human::draw()
                         glPushMatrix();
                             glTranslatef( -0.6, 0.2, 0.0 );
                             scapula(1, 'r');
+                            Mat4f particleXform4 = matCamInverse * glGetMatrix(GL_MODELVIEW_MATRIX);
+                            ParticleSystem::cloth_end = particleXform4 * Vec4f(0,0,0,1);
+    
                             glPushMatrix();
                                 glRotatef(rscapula_rx, 1.0, 0.0, 0.0 );
                                 glRotatef(rscapula_ry, 0.0, 1.0, 0.0 );
@@ -325,6 +342,10 @@ void Human::draw()
                                         glRotatef(rhand_rz, 0.0, 0.0, 1.0 );
     
                                         hand(1);
+    
+                                        Mat4f particleXform = matCamInverse * glGetMatrix(GL_MODELVIEW_MATRIX);
+                                        ParticleSystem::particleOrigin = particleXform * Vec4f(0,0,0,1);
+    
                                     glPopMatrix();
                                 glPopMatrix();
                             glPopMatrix();
@@ -340,8 +361,7 @@ void Human::draw()
     
     
 
-    Mat4f particleXform = matCamInverse * glGetMatrix(GL_MODELVIEW_MATRIX);
-    ParticleSystem::particleOrigin = particleXform * Vec4f(0,0,0,1);
+    
     
   //  std::cout<<"ori:" << ParticleSystem::particleOrigin[0] << "," << ParticleSystem::particleOrigin[1] << "," << ParticleSystem::particleOrigin[2] << std::endl;
 
@@ -616,17 +636,21 @@ void y_box(float h) {
 
 int main()
 {
+    
+    ParticleSystem::pony = true;
+    ParticleSystem::cloth = true;
+    
     ModelerControl controls[NUMCONTROLS ];
 
     
 	controls[PELVIS_R ] = ModelerControl("plevis rotation", -180.0, 180.0, 0.1, 0.0 );
     controls[LTHIGH_RX ] = ModelerControl("lthigh x rotation", -180.0, 180.0, 0.1, 0.0 );
     controls[LTHIGH_RY ] = ModelerControl("lthigh y rotation", -45.0, 45.0, 0.1, 0.0 );
-    controls[LTHIGH_RZ ] = ModelerControl("lthigh z rotation", -180.0, 180.0, 0.1, 0.0 );
+    controls[LTHIGH_RZ ] = ModelerControl("lthigh z rotation", -90.0, 180.0, 0.1, 0.0 );
     
     controls[RTHIGH_RX ] = ModelerControl("rthigh x rotation", -180.0, 180.0, 0.1, 0.0 );
     controls[RTHIGH_RY ] = ModelerControl("rthigh y rotation", -45.0, 45.0, 0.1, 0.0 );
-    controls[RTHIGH_RZ ] = ModelerControl("rthigh z rotation", -180.0, 180.0, 0.1, 0.0 );
+    controls[RTHIGH_RZ ] = ModelerControl("rthigh z rotation", -180.0, 90.0, 0.1, 0.0 );
     
     
     controls[LSHIN_RX ] = ModelerControl("lshin z rotation", 0.0, -180.0, 0.1, 0.0 );

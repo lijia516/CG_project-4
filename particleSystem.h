@@ -88,6 +88,13 @@ public:
 	void setDirty(bool d) { dirty = d; }
 
     static Vec4f particleOrigin;
+    static Vec4f particleOrigin_pony;
+    static Vec4f particleOrigin_cloth;
+    static bool pony;
+    static bool cloth;
+    static Vec4f cloth_start;
+    static Vec4f cloth_end;
+    
     float time;
     
 protected:
@@ -127,8 +134,12 @@ protected:
     static int particleNum;
     static int particleReal;
     static int particleNum_ponyTail;
+    static int particleNum_cloth_row;
+    static int particleNum_cloth_col;
     static float spring_K;
     static float spring_cloth_K;
+    static float deltaX;
+   
 
 };
 
