@@ -21,48 +21,21 @@ int BezierCurveEvaluator::parameter( int n,  int k) const
 
 void BezierCurveEvaluator::drawBezier( Point p0,  Point p1, Point p2, Point p3, std::vector<Point>& ptvEvaluatedCurvePts, float fAniLength) const
 {
-    
-    float len0 = sqrt(pow(p1.x - p0.x, 2.0) + pow(p1.y - p0.y, 2.0));
-    float len1 = sqrt(pow(p2.x - p1.x, 2.0) + pow(p2.y - p1.y, 2.0));
-    float len2 = sqrt(pow(p3.x - p2.x, 2.0) + pow(p3.y - p2.y, 2.0));
-    float len3 = sqrt(pow(p0.x - p3.x, 2.0) + pow(p0.y - p3.y, 2.0));
-    
+
     
     if (s_SubCon) {
         
-        if ((len0 + len1 + len2) * 1.0 / len3 < (1 + LIMIT)) {
+        float len0 = sqrt(pow(p1.x - p0.x, 2.0) + pow(p1.y - p0.y, 2.0));
+        float len1 = sqrt(pow(p2.x - p1.x, 2.0) + pow(p2.y - p1.y, 2.0));
+        float len2 = sqrt(pow(p3.x - p2.x, 2.0) + pow(p3.y - p2.y, 2.0));
+        float len3 = sqrt(pow(p0.x - p3.x, 2.0) + pow(p0.y - p3.y, 2.0));
         
-            /*    for(float n=0; n < s_iSegCount; n++){
-                    
-                    float u = ((float)n)/((float)s_iSegCount-1);
-                    
-                    float factor = parameter(3,0) * pow(u,0) * pow((1-u),3-0);
-                    float x = factor*(p0.x);
-                    float y = factor*(p0.y);
-                    
-                    factor =  parameter(3,1) * pow(u,1) * pow((1-u),3-1);
-                    x += factor*(p1.x);
-                    y += factor*(p1.y);
-                    
-                    factor =  parameter(3,2) * pow(u,2) * pow((1-u),3-2);
-                    x += factor*(p2.x);
-                    y += factor*(p2.y);
-                    
-                    factor =  parameter(3,3) * pow(u,3) * pow((1-u),3-3);
-                    x += factor*(p3.x);
-                    y += factor*(p3.y);
-                    
-                    x = x > fAniLength ? x - fAniLength : x;
-                    
-                    ptvEvaluatedCurvePts.push_back(Point(x,y));
-                    std::cout << "x, y: " << x <<"," << y << std::endl;
-                    
-                } */
+        if ((len0 + len1 + len2) * 1.0 / len3 < (1 + LIMIT)) {
             
+             p0.x = p0.x > fAniLength ? p0.x - fAniLength : p0.x;
             
             ptvEvaluatedCurvePts.push_back(p0);
-          //  ptvEvaluatedCurvePts.push_back(p3);
-            std::cout << "x, y: " << p0.x <<"," << p0.y << std::endl;
+            std::cout << "s_SubCon x, y: " << p0.x <<"," << p0.y << std::endl;
             
         } else {
             
@@ -115,8 +88,10 @@ void BezierCurveEvaluator::drawBezier( Point p0,  Point p1, Point p2, Point p3, 
             float pu_x = ((1 - u) * r0_x + u * r1_x) ;
             float pu_y = ((1 - u) * r0_y + u * r1_y) ;
             
+             pu_x = pu_x > fAniLength ? pu_x - fAniLength : pu_x;
+            
             ptvEvaluatedCurvePts.push_back(Point(pu_x, pu_y));
-            std::cout << "x, y: " << pu_x <<"," << pu_y << std::endl;
+            std::cout << "s_DeCaste x, y: " << pu_x <<"," << pu_y << std::endl;
 
         }
         
@@ -140,13 +115,15 @@ void BezierCurveEvaluator::drawBezier( Point p0,  Point p1, Point p2, Point p3, 
             y += factor*(p2.y);
             
             factor =  parameter(3,3) * pow(u,3) * pow((1-u),3-3);
+            
             x += factor*(p3.x);
             y += factor*(p3.y);
+            
             
             x = x > fAniLength ? x - fAniLength : x;
             
             ptvEvaluatedCurvePts.push_back(Point(x,y));
-            std::cout << "x, y: " << x <<"," << y << std::endl;
+            std::cout << "normal x, y: " << x <<"," << y << std::endl;
         
         }
     }
@@ -218,9 +195,13 @@ void BezierCurveEvaluator::evaluateCurve(const std::vector<Point>& ptvCtrlPts,
     float gap = 1;
     for (; i + 3 < iCtrlPtCount; i += 3){
         
+         std::cout << "i: "<< i <<std::endl;
+        
         drawBezier( ptvCtrlPts[i],  ptvCtrlPts[i+1], ptvCtrlPts[i+2], ptvCtrlPts[i+3], ptvEvaluatedCurvePts, fAniLength);
     }
     
+    
+    std::cout << "finish middle: "<< std::endl;
     
     if (bWrap) {
         
