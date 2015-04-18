@@ -29,6 +29,12 @@ bool ParticleSystem::pony = false;
 bool ParticleSystem::cloth = false;
 bool ParticleSystem::bounceOff = false;
 
+Vec4f ParticleSystem::particleOrigin_pony = Vec4f(0,0,0,1);
+Vec4f ParticleSystem::particleOrigin_cloth = Vec4f(0,0,0,1);
+
+Vec4f ParticleSystem::cloth_start = Vec4f(0,0,0,1);
+Vec4f ParticleSystem::cloth_end = Vec4f(0,0,0,1);
+
 
 Vec3f ori_position = Vec3f(0,0,0);
 
@@ -66,67 +72,75 @@ void ParticleSystem::startSimulation(float t)
 {
 	// TODO
     
+    time  = 0;
     // pony tail
     
-    particleReal = 0;
-    ori_position = Vec3f(particleOrigin);
+    if (pony) {
     
-    ponyTail_particles.resize(particleNum_ponyTail, NULL);
-    Particle* p = new Particle();
-    p->position = Vec3f(particleOrigin_pony);
-    p->velocity = Vec3f(0,0,0);
-    p->force = Vec3f(0,0,0);
-    p->mass = 1.0;
-    ponyTail_particles[0] = p;
-    
-    
-    for (int i = 1; i < particleNum_ponyTail; i++) {
+        particleReal = 0;
+        ori_position = Vec3f(particleOrigin);
         
+        ponyTail_particles.resize(particleNum_ponyTail, NULL);
         Particle* p = new Particle();
-        p->position = Vec3f(particleOrigin_pony[0] + i * 0.5, particleOrigin_pony[1] + i * 0.1, particleOrigin_pony[2] + i * 0.1);
-        p->velocity = Vec3f(0.15,0.1,0);
-        p->force = Vec3f(gravity);
+        p->position = Vec3f(particleOrigin_pony);
+        p->velocity = Vec3f(0,0,0);
+        p->force = Vec3f(0,0,0);
         p->mass = 1.0;
-        ponyTail_particles[i] = p;
+        ponyTail_particles[0] = p;
+        
+        
+        for (int i = 1; i < particleNum_ponyTail; i++) {
+            
+            Particle* p = new Particle();
+            p->position = Vec3f(particleOrigin_pony[0] + i * 0.5, particleOrigin_pony[1] + i * 0.1, particleOrigin_pony[2] + i * 0.1);
+            p->velocity = Vec3f(0.15,0.1,0);
+            p->force = Vec3f(gravity);
+            p->mass = 1.0;
+            ponyTail_particles[i] = p;
+        }
+    
     }
     
     // cloth
-    std::cout <<"start simulate " << t << std::endl;
-    cloth_particles = new Particle*[particleNum_cloth_row];
-    for (int i = 0; i < particleNum_cloth_row; i++) {
-        cloth_particles[i] = new Particle[particleNum_cloth_col];
-    }
+    
+    if (cloth) {
+    
+        std::cout <<"start simulate " << t << std::endl;
+        cloth_particles = new Particle*[particleNum_cloth_row];
+        for (int i = 0; i < particleNum_cloth_row; i++) {
+            cloth_particles[i] = new Particle[particleNum_cloth_col];
+        }
 
-    
-    deltaX = (cloth_start[0] - cloth_end[0]) * 1.0 / 4.0;
-    float deltaY = (cloth_start[1] - cloth_end[1]) * 1.0 / 4.0;
-    float deltaZ = (cloth_start[2] - cloth_end[2]) * 1.0 / 4.0;
-    
-    
-    for (int j = 0; j < particleNum_cloth_col; j++) {
-        cloth_particles[0][j].position = Vec3f( cloth_start[0] - deltaX * j, cloth_start[1] - deltaY * j + 0.3, cloth_start[2] - deltaZ * j);
-        cloth_particles[0][j].velocity = Vec3f(0,0,0);
-        cloth_particles[0][j].force = Vec3f(gravity);
-        cloth_particles[0][j].mass = 1.0;
-    }
-    
-    
-    for (int i = 1; i < particleNum_cloth_row; i++) {
+        
+        deltaX = (cloth_start[0] - cloth_end[0]) * 1.0 / 4.0;
+        float deltaY = (cloth_start[1] - cloth_end[1]) * 1.0 / 4.0;
+        float deltaZ = (cloth_start[2] - cloth_end[2]) * 1.0 / 4.0;
+        
+        
         for (int j = 0; j < particleNum_cloth_col; j++) {
-            
-            cloth_particles[i][j].position = Vec3f(cloth_particles[0][0].position[0] - deltaX * j, cloth_particles[0][0].position[1] - 0.2* i, cloth_particles[0][0].position[2] + 0.15 * i);
-            
-            cloth_particles[i][j].force = Vec3f(gravity);
-            cloth_particles[i][j].velocity = Vec3f(0,0,0);
-            cloth_particles[i][j].mass = 1.0;
+            cloth_particles[0][j].position = Vec3f( cloth_start[0] - deltaX * j, cloth_start[1] - deltaY * j + 0.3, cloth_start[2] - deltaZ * j);
+            cloth_particles[0][j].velocity = Vec3f(0,0,0);
+            cloth_particles[0][j].force = Vec3f(gravity);
+            cloth_particles[0][j].mass = 1.0;
+        }
+        
+        
+        for (int i = 1; i < particleNum_cloth_row; i++) {
+            for (int j = 0; j < particleNum_cloth_col; j++) {
+                
+                cloth_particles[i][j].position = Vec3f(cloth_particles[0][0].position[0] - deltaX * j, cloth_particles[0][0].position[1] - 0.2* i, cloth_particles[0][0].position[2] + 0.15 * i);
+                
+                cloth_particles[i][j].force = Vec3f(gravity);
+                cloth_particles[i][j].velocity = Vec3f(0,0,0);
+                cloth_particles[i][j].mass = 1.0;
+                
+            }
             
         }
         
+        std::cout <<"position: " << cloth_particles[0][0].position[0] <<"," << cloth_particles[0][0].position[1] << "," << cloth_particles[0][0].position[2] << std::endl;
+        std::cout <<"position: " << cloth_particles[9][4].position[0] <<"," << cloth_particles[9][4].position[1] << "," << cloth_particles[9][4].position[2] << std::endl;
     }
-    
-    std::cout <<"position: " << cloth_particles[0][0].position[0] <<"," << cloth_particles[0][0].position[1] << "," << cloth_particles[0][0].position[2] << std::endl;
-    std::cout <<"position: " << cloth_particles[9][4].position[0] <<"," << cloth_particles[9][4].position[1] << "," << cloth_particles[9][4].position[2] << std::endl;
-    
     
 	// These values are used by the UI ...
 	// negative bake_end_time indicates that simulation
@@ -147,11 +161,12 @@ void ParticleSystem::stopSimulation(float t)
     
     particleReal = 0;
     particles.clear();
-    ponyTail_particles.clear();
+    if (pony) ponyTail_particles.clear();
     
-    for (int i = 0; i < particleNum_cloth_row; i++) delete[] cloth_particles[i];
-    delete[] cloth_particles;
-    
+    if (cloth) {
+        for (int i = 0; i < particleNum_cloth_row; i++) delete[] cloth_particles[i];
+        delete[] cloth_particles;
+    }
     
 	// These values are used by the UI
 	simulate = false;
@@ -166,11 +181,13 @@ void ParticleSystem::resetSimulation(float t)
 
     particleReal = 0;
     particles.clear();
-    ponyTail_particles.clear();
+    if (pony) ponyTail_particles.clear();
     
-    for (int i = 0; i < particleNum_cloth_row; i++) delete[] cloth_particles[i];
-    delete[] cloth_particles;
-    
+    if (cloth) {
+        for (int i = 0; i < particleNum_cloth_row; i++) delete[] cloth_particles[i];
+        delete[] cloth_particles;
+    }
+        
 	// These values are used by the UI
 	simulate = false;
 	dirty = true;
@@ -295,8 +312,6 @@ void ParticleSystem::computeForcesAndUpdateParticles(float t)
             
 
         }
-
-        bakeParticles(t);
         
         if (pony) {
             ponyTail_computeForcesAndUpdateParticles(t);
@@ -305,6 +320,9 @@ void ParticleSystem::computeForcesAndUpdateParticles(float t)
         if (cloth) {
             cloth_computeForcesAndUpdateParticles(t);
         }
+        
+        bakeParticles(t);
+        
     }
     
 	// Debugging info
@@ -356,58 +374,65 @@ void ParticleSystem::drawParticles(float t)
          
          //ponyTail
          
-         for(iter i = ponyTail_particles.begin(); i != ponyTail_particles.end(); ++i) {
-             
-             
-             glPushMatrix();
-                glTranslated((*i)->position[0], (*i)->position[1], (*i)->position[2]);
-                drawSphere(particleRadius);
-             glPopMatrix();
-             
-             
-             if (i != ponyTail_particles.begin()) {
-             
-                 glLineWidth(2.5);
-                 glColor3f(0.0, 0.0, 1.0);
-                 glBegin(GL_LINES);
-                    glVertex3f((*i)->position[0], (*i)->position[1], (*i)->position[2]);
-                    glVertex3f((*(i-1))->position[0], (*(i-1))->position[1], (*(i-1))->position[2]);
-                 glEnd();
-             }
-             
-         }
+         if (pony) {
          
+             for(iter i = ponyTail_particles.begin(); i != ponyTail_particles.end(); ++i) {
+                 
+                 
+                 glPushMatrix();
+                    glTranslated((*i)->position[0], (*i)->position[1], (*i)->position[2]);
+                    drawSphere(particleRadius);
+                 glPopMatrix();
+                 
+                 
+                 if (i != ponyTail_particles.begin()) {
+                 
+                     glLineWidth(2.5);
+                     glColor3f(0.0, 0.0, 1.0);
+                     glBegin(GL_LINES);
+                        glVertex3f((*i)->position[0], (*i)->position[1], (*i)->position[2]);
+                        glVertex3f((*(i-1))->position[0], (*(i-1))->position[1], (*(i-1))->position[2]);
+                     glEnd();
+                 }
+                 
+             }
+         }
          
          // cloth
          
        //   std::cout <<"draw cloth " << t << std::endl;
          
-         for (int i = 0; i < particleNum_cloth_row - 1; i++)
-         {
-             for (int j = 0; j < particleNum_cloth_col - 1; j++)
+         
+         if (pony) {
+         
+             for (int i = 0; i < particleNum_cloth_row - 1; i++)
              {
-                 Vec3f p;
-                 
-               //  std::cout <<"inside draw cloth: " << i << "," << j << std::endl;
-                 
-                 p = cloth_particles[i][j].position;
-                 
-                 glPushMatrix();
-                 glTranslated(p[0], p[1], p[2]);
-                 drawSphere(0.05);
-                 glPopMatrix();
-                 
-                     glBegin(GL_QUADS);
-                        glVertex3f(p[0], p[1], p[2]);
-                        p = cloth_particles[i][j + 1].position;
-                        glVertex3f(p[0], p[1], p[2]);
-                        p = cloth_particles[i + 1][j + 1].position;
-                        glVertex3f(p[0], p[1], p[2]);
-                        p = cloth_particles[i + 1][j ].position;
-                        glVertex3f(p[0], p[1], p[2]);
-                     glEnd();
-                 
+                 for (int j = 0; j < particleNum_cloth_col - 1; j++)
+                 {
+                     Vec3f p;
+                     
+                   //  std::cout <<"inside draw cloth: " << i << "," << j << std::endl;
+                     
+                     p = cloth_particles[i][j].position;
+                     
+                     glPushMatrix();
+                     glTranslated(p[0], p[1], p[2]);
+                     drawSphere(0.05);
+                     glPopMatrix();
+                     
+                         glBegin(GL_QUADS);
+                            glVertex3f(p[0], p[1], p[2]);
+                            p = cloth_particles[i][j + 1].position;
+                            glVertex3f(p[0], p[1], p[2]);
+                            p = cloth_particles[i + 1][j + 1].position;
+                            glVertex3f(p[0], p[1], p[2]);
+                            p = cloth_particles[i + 1][j ].position;
+                            glVertex3f(p[0], p[1], p[2]);
+                         glEnd();
+                     
+                 }
              }
+             
          }
          
      } else {
@@ -426,92 +451,91 @@ void ParticleSystem::drawParticles(float t)
              
              glPushMatrix();
                 glTranslated((*i)[0], (*i)[1], (*i)[2]);
-                drawSphere(0.1);
+                drawSphere(particleRadius);
              glPopMatrix();
              
          }
          
          
-         std::vector<Vec3f> current_particlesPony_position;
-         std::map<float, std::vector<Vec3f> >::iterator result2 = bake_particlesPony.find(t);
-         if (result2 != bake_particlesPony.end())
-             current_particlesPony_position = (*result2).second;
+         if (pony) {
          
-         typedef vector<Vec3f>::const_iterator iter;
-         
-        
-         
-         for(iter i = current_particlesPony_position.begin(); i != current_particlesPony_position.end(); ++i) {
+             std::vector<Vec3f> current_particlesPony_position;
+             std::map<float, std::vector<Vec3f> >::iterator result2 = bake_particlesPony.find(t);
+             if (result2 != bake_particlesPony.end())
+                 current_particlesPony_position = (*result2).second;
              
-             glPushMatrix();
-             glTranslated((*i)[0], (*i)[1], (*i)[2]);
-             drawSphere(particleRadius);
-             glPopMatrix();
+             typedef vector<Vec3f>::const_iterator iter;
              
+            
              
-             if (i != current_particlesPony_position.begin()) {
+             for(iter i = current_particlesPony_position.begin(); i != current_particlesPony_position.end(); ++i) {
                  
-                 glLineWidth(2.5);
-                 glColor3f(0.0, 0.0, 1.0);
-                 glBegin(GL_LINES);
-                 glVertex3f((*i)[0], (*i)[1], (*i)[2]);
-                 glVertex3f((*(i-1))[0], (*(i-1))[1], (*(i-1))[2]);
-                 glEnd();
+                 glPushMatrix();
+                 glTranslated((*i)[0], (*i)[1], (*i)[2]);
+                 drawSphere(particleRadius);
+                 glPopMatrix();
+                 
+                 
+                 if (i != current_particlesPony_position.begin()) {
+                     
+                     glLineWidth(2.5);
+                     glColor3f(0.0, 0.0, 1.0);
+                     glBegin(GL_LINES);
+                     glVertex3f((*i)[0], (*i)[1], (*i)[2]);
+                     glVertex3f((*(i-1))[0], (*(i-1))[1], (*(i-1))[2]);
+                     glEnd();
+                 }
              }
          }
          
          
-         int index = -1;
+         if (cloth) {
+             
          
-         std::vector<Vec3f> current_particlesCloth_position;
-         std::map<float, std::vector<Vec3f> >::iterator result3 = bake_particlesCloth.find(t);
-         if (result3 != bake_particlesCloth.end())
-             current_particlesCloth_position = (*result3).second;
-         
-         typedef vector<Vec3f>::const_iterator iter;
-         
-         for(iter i = current_particlesCloth_position.begin(); i != current_particlesCloth_position.end(); ++i) {
+             int index = -1;
              
+             std::vector<Vec3f> current_particlesCloth_position;
+             std::map<float, std::vector<Vec3f> >::iterator result3 = bake_particlesCloth.find(t);
+             if (result3 != bake_particlesCloth.end())
+                 current_particlesCloth_position = (*result3).second;
              
+             typedef vector<Vec3f>::const_iterator iter;
              
-             index++;
-             
-              //std::cout <<"index: " << index << std::endl;
-             
-             glPushMatrix();
-             glTranslated((*i)[0], (*i)[1], (*i)[2]);
-             drawSphere(0.05);
-             glPopMatrix();
-             
-             
-             int row = index / particleNum_cloth_col;
-             int col = index % particleNum_cloth_col;
-             
-             
-             if (row != particleNum_cloth_row - 1 && col != particleNum_cloth_col - 1) {
-                 
-                 Vec3f p;
-                 
-               //  glBegin(GL_QUADS);
-               //  glVertex3f((*i)[0], (*i)[1], (*i)[2]);
-               //  glVertex3f((*(i + 1))[0], (*(i+1))[1], (*(i+1))[2]);
-               //  glVertex3f((*((row + 1) * particleNum_cloth_col + 1 + i))[0], (*((row + 1) * particleNum_cloth_col + 1 + i))[1], (*((row + 1) * particleNum_cloth_col + 1 + i))[2]);
-               //  glVertex3f((*((row + 1) * particleNum_cloth_col + i))[0], (*((row + 1) * particleNum_cloth_col + i))[1], (*((row + 1) * particleNum_cloth_col + i))[2]);
-               //  glEnd();
+             for(iter i = current_particlesCloth_position.begin(); i != current_particlesCloth_position.end(); ++i) {
                  
                  
                  
-                 glBegin(GL_QUADS);
-                 glVertex3f(current_particlesCloth_position[row * particleNum_cloth_col + col][0], current_particlesCloth_position[row * particleNum_cloth_col + col][1], current_particlesCloth_position[row * particleNum_cloth_col + col][2]);
+                 index++;
                  
-                 glVertex3f(current_particlesCloth_position[row * particleNum_cloth_col + col + 1][0], current_particlesCloth_position[row * particleNum_cloth_col + col + 1][1], current_particlesCloth_position[row * particleNum_cloth_col + col + 1][2]);
+                  //std::cout <<"index: " << index << std::endl;
                  
-                 glVertex3f(current_particlesCloth_position[(row + 1) * particleNum_cloth_col + col + 1][0], current_particlesCloth_position[(row + 1) * particleNum_cloth_col + col + 1][1], current_particlesCloth_position[(row + 1) * particleNum_cloth_col + col + 1][2]);
+                 glPushMatrix();
+                 glTranslated((*i)[0], (*i)[1], (*i)[2]);
+                 drawSphere(0.05);
+                 glPopMatrix();
                  
                  
-                 glVertex3f(current_particlesCloth_position[(row + 1) * particleNum_cloth_col + col][0], current_particlesCloth_position[(row + 1) * particleNum_cloth_col + col][1], current_particlesCloth_position[(row + 1) * particleNum_cloth_col + col][2]);
-                 glEnd();
+                 int row = index / particleNum_cloth_col;
+                 int col = index % particleNum_cloth_col;
                  
+                 
+                 if (row != particleNum_cloth_row - 1 && col != particleNum_cloth_col - 1) {
+                     
+                     Vec3f p;
+                     
+                     glBegin(GL_QUADS);
+                     glVertex3f(current_particlesCloth_position[row * particleNum_cloth_col + col][0], current_particlesCloth_position[row * particleNum_cloth_col + col][1], current_particlesCloth_position[row * particleNum_cloth_col + col][2]);
+                     
+                     glVertex3f(current_particlesCloth_position[row * particleNum_cloth_col + col + 1][0], current_particlesCloth_position[row * particleNum_cloth_col + col + 1][1], current_particlesCloth_position[row * particleNum_cloth_col + col + 1][2]);
+                     
+                     glVertex3f(current_particlesCloth_position[(row + 1) * particleNum_cloth_col + col + 1][0], current_particlesCloth_position[(row + 1) * particleNum_cloth_col + col + 1][1], current_particlesCloth_position[(row + 1) * particleNum_cloth_col + col + 1][2]);
+                     
+                     
+                     glVertex3f(current_particlesCloth_position[(row + 1) * particleNum_cloth_col + col][0], current_particlesCloth_position[(row + 1) * particleNum_cloth_col + col][1], current_particlesCloth_position[(row + 1) * particleNum_cloth_col + col][2]);
+                     glEnd();
+                     
+                     
+                 }
                  
              }
              
@@ -546,33 +570,37 @@ void ParticleSystem::bakeParticles(float t)
     bake_particles.insert(std::map<float, std::vector<Vec3f> >::value_type(t, current_particles_position));
     
     
-    std::vector<Vec3f> current_particlesPony_position;
+    if (pony) {
     
-    for(iter i = ponyTail_particles.begin(); i != ponyTail_particles.end(); ++i) {
+        std::vector<Vec3f> current_particlesPony_position;
         
-        Vec3f position = Vec3f((*i)->position[0], (*i)->position[1], (*i)->position[2]);
-        
-        current_particlesPony_position.push_back(position);
-        
-    }
-    
-    bake_particlesPony.insert(std::map<float, std::vector<Vec3f> >::value_type(t, current_particlesPony_position));
-    
-    
-    
-    std::vector<Vec3f> current_particlesCloth_position;
-    
-    for(int i = 0; i < particleNum_cloth_row; i++) {
-        for (int j = 0; j < particleNum_cloth_col; j++) {
+        for(iter i = ponyTail_particles.begin(); i != ponyTail_particles.end(); ++i) {
             
-            Vec3f position = Vec3f(cloth_particles[i][j].position[0], cloth_particles[i][j].position[1], cloth_particles[i][j].position[2]);
-            current_particlesCloth_position.push_back(position);
+            Vec3f position = Vec3f((*i)->position[0], (*i)->position[1], (*i)->position[2]);
+            
+            current_particlesPony_position.push_back(position);
+            
         }
+        
+        bake_particlesPony.insert(std::map<float, std::vector<Vec3f> >::value_type(t, current_particlesPony_position));
+    
     }
     
-    bake_particlesCloth.insert(std::map<float, std::vector<Vec3f> >::value_type(t, current_particlesCloth_position));
+    if (pony) {
     
+        std::vector<Vec3f> current_particlesCloth_position;
+        
+        for(int i = 0; i < particleNum_cloth_row; i++) {
+            for (int j = 0; j < particleNum_cloth_col; j++) {
+                
+                Vec3f position = Vec3f(cloth_particles[i][j].position[0], cloth_particles[i][j].position[1], cloth_particles[i][j].position[2]);
+                current_particlesCloth_position.push_back(position);
+            }
+        }
+        
+        bake_particlesCloth.insert(std::map<float, std::vector<Vec3f> >::value_type(t, current_particlesCloth_position));
     
+    }
 }
 
 /** Clears out your data structure of baked particles */
@@ -581,11 +609,9 @@ void ParticleSystem::clearBaked()
 	// TODO
     
     bake_particles.clear();
-    bake_particlesPony.clear();
-    bake_particlesCloth.clear();
-    particleReal = 0;
-    particles.clear();
-    std::cout << "particles.size:" << particles.size() << std::endl;
+    if (pony) bake_particlesPony.clear();
+    if (cloth) bake_particlesCloth.clear();
+
 }
 
 
@@ -709,9 +735,6 @@ void ParticleSystem::ponyTail_computeForcesAndUpdateParticles(float t)
             (*i)->position[1] += dy;
             (*i)->position[2] += dz;
         }
-  
-        
-        bakeParticles(t);
     }
 }
 
@@ -838,7 +861,6 @@ void ParticleSystem::cloth_computeForcesAndUpdateParticles(float t)
             }
         
         }
-        bakeParticles(t);
     }
 }
 

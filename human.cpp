@@ -25,12 +25,6 @@ using namespace std;
 #define MIN_STEP 0.1
 
 Vec4f ParticleSystem::particleOrigin = Vec4f(0,0,0,1);
-Vec4f ParticleSystem::particleOrigin_pony = Vec4f(0,0,0,1);
-Vec4f ParticleSystem::particleOrigin_cloth = Vec4f(0,0,0,1);
-
-
-Vec4f ParticleSystem::cloth_start = Vec4f(0,0,0,1);
-Vec4f ParticleSystem::cloth_end = Vec4f(0,0,0,1);
 
 // This is a list of the controls for the RobotArm
 // We'll use these constants to access the values 
