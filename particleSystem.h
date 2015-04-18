@@ -77,6 +77,7 @@ public:
     
     void ponyTail_computeForcesAndUpdateParticles(float t);
     void cloth_computeForcesAndUpdateParticles(float t);
+    void pipe_computeForcesAndUpdateParticles(float t);
 
 
 	// These accessor fxns are implemented for you
@@ -88,8 +89,10 @@ public:
 	void setDirty(bool d) { dirty = d; }
 
     static Vec4f particleOrigin;
+    static Vec4f particleOrigin_pipe;
     static Vec4f particleOrigin_pony;
     static Vec4f particleOrigin_cloth;
+    static bool pipe;
     static bool pony;
     static bool cloth;
     static bool bounceOff;
@@ -97,6 +100,7 @@ public:
     static Vec4f cloth_end;
     
     float time;
+    float time2;
     
 protected:
 	
@@ -117,6 +121,7 @@ protected:
     /*** particles***/
     
     std::vector<Particle*> particles;
+    std::vector<Particle*> particles_pipe;
     std::vector<Particle*> ponyTail_particles;
     
     Particle** cloth_particles;
@@ -125,6 +130,7 @@ protected:
     
     
     std::map<float, std::vector<Vec3f> > bake_particles;
+    std::map<float, std::vector<Vec3f> > bake_particlesPipe;
     std::map<float, std::vector<Vec3f> > bake_particlesPony;
     std::map<float, std::vector<Vec3f> > bake_particlesCloth;
     

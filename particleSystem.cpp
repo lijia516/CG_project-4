@@ -25,6 +25,7 @@ int ParticleSystem::particleNum_ponyTail = 8;
 int ParticleSystem::particleNum_cloth_row = 15;
 int ParticleSystem::particleNum_cloth_col = 5;
 float ParticleSystem::deltaX = 0;
+bool ParticleSystem::pipe = false;
 bool ParticleSystem::pony = false;
 bool ParticleSystem::cloth = false;
 bool ParticleSystem::bounceOff = false;
@@ -34,6 +35,8 @@ Vec4f ParticleSystem::particleOrigin_cloth = Vec4f(0,0,0,1);
 
 Vec4f ParticleSystem::cloth_start = Vec4f(0,0,0,1);
 Vec4f ParticleSystem::cloth_end = Vec4f(0,0,0,1);
+
+Vec4f ParticleSystem::particleOrigin_pipe = Vec4f(0,0,0,1);
 
 
 Vec3f ori_position = Vec3f(0,0,0);
@@ -48,6 +51,7 @@ ParticleSystem::ParticleSystem()
 {
 	// TODO
     time = 0;
+    time2 = 0;
 }
 
 
@@ -73,6 +77,7 @@ void ParticleSystem::startSimulation(float t)
 	// TODO
     
     time  = 0;
+    time2 = 0;
     // pony tail
     
     if (pony) {
@@ -214,7 +219,7 @@ void ParticleSystem::computeForcesAndUpdateParticles(float t)
               //   particleNum = 5;
             }
             
-            std::cout << "particles.size:" << particles.size() << std::endl;
+       //     std::cout << "particles.size:" << particles.size() << std::endl;
             
             
             if  (particles.size() < particleNum) {
@@ -313,6 +318,11 @@ void ParticleSystem::computeForcesAndUpdateParticles(float t)
 
         }
         
+        if (pipe) {
+            
+            pipe_computeForcesAndUpdateParticles(t);
+        }
+        
         if (pony) {
             ponyTail_computeForcesAndUpdateParticles(t);
         }
@@ -363,14 +373,34 @@ void ParticleSystem::drawParticles(float t)
          
          // particles
          
+         
          for(iter i = particles.begin(); i != particles.end(); ++i) {
              
              glPushMatrix();
-                glTranslated((*i)->position[0], (*i)->position[1], (*i)->position[2]);
-                drawSphere(particleRadius);
+             glTranslated((*i)->position[0], (*i)->position[1], (*i)->position[2]);
+             drawSphere(particleRadius);
              glPopMatrix();
          }
-       
+         
+    
+         
+         
+         
+         if (pipe) {
+             
+             
+             for(iter i = particles_pipe.begin(); i != particles_pipe.end(); ++i) {
+                 
+                 glPushMatrix();
+                 glTranslated((*i)->position[0], (*i)->position[1], (*i)->position[2]);
+                 drawSphere(particleRadius);
+                 glPopMatrix();
+             }
+             
+             
+             
+         }
+         
          
          //ponyTail
          
@@ -455,6 +485,7 @@ void ParticleSystem::drawParticles(float t)
              glPopMatrix();
              
          }
+         
          
          
          if (pony) {
@@ -864,3 +895,72 @@ void ParticleSystem::cloth_computeForcesAndUpdateParticles(float t)
     }
 }
 
+
+void ParticleSystem::pipe_computeForcesAndUpdateParticles(float t){
+    
+    if (isSimulate()) {
+        
+        
+        if (t - time2 > 0.3) {
+            
+            time2 = t;
+ 
+            if  (particles_pipe.size() < particleNum) {
+                
+                Particle* p = new Particle();
+                p->position = Vec3f(particleOrigin_pipe);
+                p->velocity = Vec3f(1, 2, 0);
+                p->force = Vec3f(gravity);
+                particles_pipe.push_back(p);
+                particleReal++;
+            }
+        }
+        
+        float deltaT = t - prevT;
+        
+        typedef vector<Particle*>::const_iterator iter;
+        
+        for(iter i = particles_pipe.begin(); i != particles_pipe.end(); ++i) {
+            
+            // F = 1/2 * C * S * V^2
+            Vec3f airResistance_cur = Vec3f(0,0,0);
+            
+            airResistance_cur[0] = 0.5 * airResistance * 4 * 3.1415926 * particleRadius * particleRadius * 0.5 * (*i)->velocity[0] * (*i)->velocity[0];
+            airResistance_cur[1] = 0.5 * airResistance * 4 * 3.1415926 * particleRadius * particleRadius * 0.5 * (*i)->velocity[1] * (*i)->velocity[1];
+            airResistance_cur[2] = 0.5 * airResistance * 4 * 3.1415926 * particleRadius * particleRadius * 0.5 * (*i)->velocity[2] * (*i)->velocity[2];
+            
+            if ((*i)->velocity[0] > 0) {
+                
+                (*i)->force[0] -= airResistance_cur[0];
+            } else {
+                
+                (*i)->force[0] += airResistance_cur[0];
+            }
+            
+            if ((*i)->velocity[1] > 0) {
+                
+                (*i)->force[1] -= airResistance_cur[1];
+            } else {
+                
+                (*i)->force[1] += airResistance_cur[1];
+            }
+            
+            if ((*i)->velocity[2] > 0) {
+                
+                (*i)->force[2] -= airResistance_cur[2];
+            } else {
+                
+                (*i)->force[2] += airResistance_cur[2];
+            }
+            
+            
+            (*i)->velocity[0] += (*i)->force[0] * 1.0 / (*i)->mass * deltaT * 0.1;
+            (*i)->velocity[1] += (*i)->force[1] * 1.0 / (*i)->mass * deltaT * 0.1;
+            (*i)->velocity[2] += (*i)->force[2] * 1.0 / (*i)->mass * deltaT * 0.1;
+            
+            (*i)->position[0] += (*i)->velocity[0] * deltaT;
+            (*i)->position[1] += (*i)->velocity[1] * deltaT;
+            (*i)->position[2] += (*i)->velocity[2] * deltaT;
+        }
+    }
+}

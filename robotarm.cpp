@@ -39,7 +39,7 @@ enum RobotArmControls
 
 void ground(float h);
 void base(float h);
-void rotation_base(float h);
+void rotation_base(float h, Mat4f M);
 void lower_arm(float h);
 void upper_arm(float h);
 void claw(float h);
@@ -125,7 +125,7 @@ void RobotArm::draw()
 
     glTranslatef( 0.0, 0.8, 0.0 );			// move to the top of the base
     glRotatef( theta, 0.0, 1.0, 0.0 );		// turn the whole assembly around the y-axis. 
-	rotation_base(h1);						// draw the rotation base
+	rotation_base(h1, matCamInverse);						// draw the rotation base
 
     glTranslatef( 0.0, h1, 0.0 );			// move to the top of the base
 	
@@ -191,7 +191,7 @@ void base(float h) {
 	glPopMatrix();
 }
 
-void rotation_base(float h) {
+void rotation_base(float h, Mat4f matCamInverse) {
 	setDiffuseColor( 0.85, 0.75, 0.25 );
 	setAmbientColor( 0.95, 0.75, 0.25 );
 	glPushMatrix();
@@ -212,6 +212,9 @@ void rotation_base(float h) {
 			glTranslatef( 0.5, h, 0.6 );
 			glRotatef( -90.0, 1.0, 0.0, 0.0 );
 			drawCylinder( h, 0.05, 0.05 ); // the pipe
+            Mat4f particleXform2 = matCamInverse * glGetMatrix(GL_MODELVIEW_MATRIX);
+            ParticleSystem::particleOrigin_pipe = particleXform2 * Vec4f(0,0,0,1);
+            ParticleSystem::particleOrigin_pipe[1] += h;
 		glPopMatrix();
 	glPopMatrix();
 }
@@ -311,6 +314,9 @@ void y_box(float h) {
 
 int main()
 {
+    
+    ParticleSystem::pipe = true;
+    
     ModelerControl controls[NUMCONTROLS ];
 
 	controls[BASE_ROTATION] = ModelerControl("base rotation (theta)", -180.0, 180.0, 0.1, 0.0 );
